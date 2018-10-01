@@ -12,7 +12,6 @@ def divide(x,y):
     else:
         return x/y
 
-
 class MembershipFunction:
     name = 'Membership Function'
     def __init__(self, params, name=None, universe=None):
@@ -35,7 +34,11 @@ class MembershipFunction:
     def centroid(self):
         pass
     
-    def show(self, points=config.default_points):
+    @property
+    def spread(self):
+        pass
+    
+    def show(self, points=default_points):
         #interval = (self.universe[1] - self.universe[0])/100.0
         #u = np.arange(self.universe[0], self.universe[1], interval)
         u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
@@ -68,6 +71,9 @@ class Trimf(MembershipFunction):
     def centroid(self):
         return (self.a+self.b+self.c)/3.0
     
+    @property
+    def spread(self):
+        return self.c - self.a
 
 class Gaussmf(MembershipFunction):
     name = 'Gaussian mf'
@@ -82,6 +88,9 @@ class Gaussmf(MembershipFunction):
 
     def centroid(self):
         return self.c
+    @property
+    def spread(self):
+        return self.sigma
 
 
 class Logmf(MembershipFunction):
@@ -92,7 +101,10 @@ class Logmf(MembershipFunction):
         c = self.params[1]
         #return 1./(1+np.exp(-x))
         return 2./(1+np.exp(((x-c)/a)**2))
-
+    
+    @property
+    def spread(self):
+        return self.a
 
 class Tanhmf(MembershipFunction):
     name = 'Tanh mf'
@@ -102,6 +114,10 @@ class Tanhmf(MembershipFunction):
         c = self.params[1]
         y = 1+np.tanh(-1*((x-c)/a)**2)
         return y
+    
+    @property
+    def spread(self):
+        return self.a
 
 
 class Sigmoidmf(MembershipFunction):
@@ -112,6 +128,10 @@ class Sigmoidmf(MembershipFunction):
         c = self.params[1]
         y = 1./(1 + np.exp(-a*(x-c)))
         return y
+    
+    @property
+    def spread(self):
+        return self.a
 
 
 class Cauchymf(MembershipFunction):
@@ -122,6 +142,10 @@ class Cauchymf(MembershipFunction):
         c = self.params[1]
         y = 1./(1+((x-c)/a)**2)
         return y
+    
+    @property
+    def spread(self):
+        return self.a
 
 
 class Trapmf(MembershipFunction):
@@ -133,6 +157,10 @@ class Trapmf(MembershipFunction):
         self.c = self.params[2]
         self.d = self.params[3]
         return max(min(divide((x-self.a),float(self.b-self.a)), 1, divide((self.d-x),float(self.d-self.c))), 0)
+    
+    @property
+    def spread(self):
+        return self.d-self.a
     
     def area(self):
         return (self.d-self.a+self.c-self.b)/2.0
@@ -157,3 +185,7 @@ class GBellmf(MembershipFunction):
             tmp = tmp**self.b
             y = 1./(1 + tmp)
         return y
+        
+    @property
+    def spread(self):
+        return self.a

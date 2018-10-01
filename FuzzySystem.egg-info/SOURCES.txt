@@ -1,0 +1,10 @@
+README.md
+FuzzySystem/__init__.py
+FuzzySystem/all.py
+FuzzySystem/config.py
+FuzzySystem.egg-info/PKG-INFO
+FuzzySystem.egg-info/SOURCES.txt
+FuzzySystem.egg-info/dependency_links.txt
+FuzzySystem.egg-info/not-zip-safe
+FuzzySystem.egg-info/requires.txt
+FuzzySystem.egg-info/top_level.txt
