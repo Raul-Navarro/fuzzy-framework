@@ -1,9 +1,17 @@
+from .MembershipFunction import  Trapmf, Trimf, Gaussmf, GBellmf, Sigmoidmf
+from .FuzzyVariable.fuzzyvariable import FuzzyVariable
+from .FuzzySet.fuzzyset import FuzzySet
+from .FuzzyInferenceSystem.fis import FuzzyInferenceSystem
+from .FuzzyInferenceSystem.fuzzyrule import FuzzyRule, Antecedent, Consequent 
+
+ 
 """
 Membership functions in matlab: 
 dsigmf, evalmf, gauss2mf, gaussmf,
 gbellmf, mf2mf, pimf, psigmf, 
 sigmf, smf, trapmf, trapmf, trimf, zmf
 """
+
 MF_DICTIONARY = {'trapmf': Trapmf, 'trimf':Trimf, 'gaussmf':Gaussmf,
                 'gbellmf':GBellmf, 'sigmf': Sigmoidmf}
 

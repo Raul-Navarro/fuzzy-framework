@@ -7,15 +7,6 @@ from ..FuzzyInferenceSystem.output import Output
 
 output_toDict = Output.output_toDict
 
-# def output_toDict(output):
-#     G = {}
-#     for rule_output in output:
-#         d = dict(rule_output)
-#         for k,v in d.items():
-#             if not k in G:
-#                 G[k]= []
-#             G[k].append(v)
-#     return G
 
 
 class Defuzzifier:
@@ -82,7 +73,7 @@ class CenterOfSets(Defuzzifier):
             fs = np.array([])
             for g in output_array:
                 c = Centroid([[(name,g)]], samples=self.samples).eval()
-                y_cos = np.append(y_cos, c.values()[0])
+                y_cos = np.append(y_cos, list(c.values())[0])
                 fs = np.append(fs, g.firing_strength)
             self.G[name] =  np.dot(y_cos.T, fs)/np.sum(fs)
         return self.G

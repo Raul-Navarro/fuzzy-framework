@@ -76,7 +76,6 @@ class Output:
                             plt.annotate(d.name, xy=(crisp, 0.3+i*0.1), xytext=(u[-10], 0.5+i*0.1),
                                     arrowprops=dict(facecolor='black', shrink=0.05), size=12)
                     else:
-                        print(defuzzifier)
                         crisp = defuzzifier(self).eval()[key]
                         plt.axvline(x=crisp, color='black', lw=4)
                         plt.annotate(defuzzifier.name, xy=(crisp, .5), xytext=(u[-10], 0.7),
