@@ -23,7 +23,12 @@ class FuzzySet:
     def eval(self, x, firing_strength=None, fs_operator = 'min'):
         if isinstance(x, (list,np.ndarray,)):
             if self.firing_strength is not None:
-                temp = [min(self.mf.eval(i), firing_strength) for i in x]
+                if fs_operator=='min':
+                    temp = [min(self.mf.eval(i), self.firing_strength) for i in x]
+                elif fs_operator=='prod':
+                    return [xi*self.firing_strength for xi in self.mf.eval(x)]
+                else:
+                    raise "Firing strength operator must be either 'min' or 'prod'"
                 return temp
             else:
                 return [self.mf.eval(i) for i in x]
@@ -31,8 +36,10 @@ class FuzzySet:
             if self.firing_strength is not None:
                 if fs_operator=='min':
                     return min(self.mf.eval(x), self.firing_strength)
-                else:
+                elif fs_operator=='prod':
                     return [xi*self.firing_strength for xi in self.mf.eval(x)]
+                else:
+                    raise "Firing strength operator must be either 'min' or 'prod'"
             return self.mf.eval(x)
     
     def __call__(self, x):
@@ -46,13 +53,10 @@ class FuzzySet:
         info = "\nname: {0}\nmembership function: {1}\nparams: {2} \nfiring strength:{3}\n"
         return info.format(self.name, self.mf.name,self.mf.params,self.firing_strength)
     
-    def show(self, points = config.default_points):
-        #interval = (self.mf.universe[1] - self.mf.universe[0])/100.0
-        #u = np.arange(self.mf.universe[0], self.mf.universe[1], interval)
+    def show(self, points = 100):
         u = np.linspace(self.mf.universe[0], self.mf.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
         c = [self.mf.eval(e) for e in u]
 
-        
         fig, ax = plt.subplots()
         plt.title('Fuzzy Set')
         ax.plot(u, c, 'r-', label=self.name)

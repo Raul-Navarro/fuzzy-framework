@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='FuzzySystem',
-      version='0.1',
+      version='0.11',
       description='FIS Framework',
       url='',
       author='Raul Navarro-Almanza',
