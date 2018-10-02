@@ -72,14 +72,15 @@ class Output:
                     if isinstance(defuzzifier, (list,)):
                         for i,d in enumerate(defuzzifier):
                             crisp = d(self).eval()[key]
-                            plt.axvline(x=crisp, color='black', lw=4)
-                            plt.annotate(d.name, xy=(crisp, 0.3+i*0.1), xytext=(u[-10], 0.5+i*0.1),
-                                    arrowprops=dict(facecolor='black', shrink=0.05), size=12)
+                            plt.axvline(x=crisp,  lw=2)
+                            plt.annotate("{}={:.3f}".format(d.name, crisp),xy=(crisp, 0.05+i*0.05), 
+                                    xytext=(universe[1], 0.05+i*0.05),
+                                    arrowprops=dict(arrowstyle="->"), size=12)
                     else:
                         crisp = defuzzifier(self).eval()[key]
-                        plt.axvline(x=crisp, color='black', lw=4)
-                        plt.annotate(defuzzifier.name, xy=(crisp, .5), xytext=(u[-10], 0.7),
-                                arrowprops=dict(facecolor='black', shrink=0.05), size=18)
+                        plt.axvline(x=crisp, lw=2)
+                        plt.annotate("{}={:.3f}".format(defuzzifier.name, crisp), xy=(crisp, .5), xytext=(u[-10], 0.7),
+                                arrowprops=dict(arrowstyle="->",connectionstyle="arc3"), size=18)
                 plt.grid()                
         plt.xlabel('Universe')
         plt.show()

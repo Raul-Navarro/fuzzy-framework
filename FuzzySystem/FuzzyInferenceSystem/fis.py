@@ -5,10 +5,37 @@ import itertools
 import logging, sys
 from .output import Output
 
+from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
 
 class FuzzyInferenceSystem:
     def __init__(self, rules, points=config.default_points, defuzzifier=None,
-                inputs=None, outputs=None):
+                inputs=None, outputs=None, and_op=minimum, or_op=maximum):
+        
+        self.and_op = None
+        self.or_op = None
+
+        if isinstance(and_op, (str,)):
+            if and_op == 'min':
+                self.and_op = minimum
+            elif and_op == 'prod':
+                self.and_op = algebraic_prod
+            else:
+                raise "Choose the correct operator either 'prod' or 'min'"
+
+        if isinstance(or_op, (str,)):
+            if or_op == 'max':
+                self.or_op = maximum
+            elif or_op == 'sum':
+                self.or_op = algebraic_sum
+            else:
+                raise "Choose the correct operator either 'sum' or 'max'"
+        
+        if not self.and_op:
+            self.and_op = and_op
+
+        if not self.or_op:
+            self.or_op = or_op
+
         self.points = points
         if rules: 
             if isinstance(rules, (list,)):
@@ -26,26 +53,29 @@ class FuzzyInferenceSystem:
             print(str(r))
         
     def eval(self, inputs):
-        print('\nEvaluation of fis with inputs:\n{}\n'.format(inputs))
-        return Output([rule.eval(inputs) for rule in self.rules])
+        print('\nEvaluation of FIS with inputs:')
+        for k in inputs.keys():
+            print('{}: {}'.format(k, inputs[k]))
+        return Output([rule.eval(inputs, and_op=self.and_op, or_op=self.or_op) for rule in self.rules])
     
-    def _discretize(self, universe):
-        u = np.linspace(universe[0], universe[1], num=self.points, endpoint=True, retstep=False, dtype=None)
-        return u
     
-    def _agregation(self, outputs):
-        fuzzy_output = {}
-        universe = {}
-        for output_rule in outputs:
-            if len(output_rule)>1 and not isinstance(output_rule[0], (tuple,)):
-                output_rule = list(itertools.chain.from_iterable(output_rule))
-            output_rule = dict(output_rule)
-            for key in output_rule.keys():
-                if not key in fuzzy_output.keys():
-                    fuzzy_output[key] = []
-                    universe[key] = output_rule[key].universe
-                fuzzy_output[key].append(output_rule[key].eval(self._discretize(universe[key]),
-                                                              float(output_rule[key].firing_strength))) 
-        for key in fuzzy_output.keys():
-            fuzzy_output[key] = np.amax(fuzzy_output[key], axis=0)
-        return Output(fuzzy_output, universe)
+    # def _discretize(self, universe):
+    #     u = np.linspace(universe[0], universe[1], num=self.points, endpoint=True, retstep=False, dtype=None)
+    #     return u
+    
+    # def _agregation(self, outputs):
+    #     fuzzy_output = {}
+    #     universe = {}
+    #     for output_rule in outputs:
+    #         if len(output_rule)>1 and not isinstance(output_rule[0], (tuple,)):
+    #             output_rule = list(itertools.chain.from_iterable(output_rule))
+    #         output_rule = dict(output_rule)
+    #         for key in output_rule.keys():
+    #             if not key in fuzzy_output.keys():
+    #                 fuzzy_output[key] = []
+    #                 universe[key] = output_rule[key].universe
+    #             fuzzy_output[key].append(output_rule[key].eval(self._discretize(universe[key]),
+    #                                                           float(output_rule[key].firing_strength))) 
+    #     for key in fuzzy_output.keys():
+    #         fuzzy_output[key] = np.amax(fuzzy_output[key], axis=0)
+    #     return Output(fuzzy_output, universe)

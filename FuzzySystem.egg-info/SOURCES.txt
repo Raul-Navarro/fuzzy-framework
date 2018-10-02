@@ -2,6 +2,7 @@ README.md
 FuzzySystem/__init__.py
 FuzzySystem/all.py
 FuzzySystem/config.py
+FuzzySystem/fuzzy_operations.py
 FuzzySystem/matlab_importer.py
 FuzzySystem.egg-info/PKG-INFO
 FuzzySystem.egg-info/SOURCES.txt

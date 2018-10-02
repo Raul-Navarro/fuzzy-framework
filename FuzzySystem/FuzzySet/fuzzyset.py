@@ -3,7 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 import logging, sys
-
+from ..NonSingleton.nonsingleton import NonSingleton
+from ..fuzzy_operations import intersection
 
 class FuzzySet:
     def __init__(self, name, mf):
@@ -21,6 +22,11 @@ class FuzzySet:
         self.mf.universe = value
     
     def eval(self, x, firing_strength=None, fs_operator = 'min'):
+        if isinstance(x, (NonSingleton,)):
+            fuzzy_ns_values = intersection(self.eval(x.values), x.eval(), type=fs_operator)
+            argmax = x.values[fuzzy_ns_values.argmax()]
+            x = argmax
+
         if isinstance(x, (list,np.ndarray,)):
             if self.firing_strength is not None:
                 if fs_operator=='min':

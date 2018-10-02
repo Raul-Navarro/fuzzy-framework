@@ -1,8 +1,12 @@
 import copy
+from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
+import numpy as np
 
 class Conector:
-    def __init__(self, operator, inputs = None):
+    def __init__(self, operator, inputs = None, and_op=minimum, or_op=maximum):
         self.operator = operator
+        self.and_op = and_op
+        self.or_op = or_op
         if inputs is not None:
             self.inputs = inputs
     
@@ -15,13 +19,13 @@ class Conector:
         if isinstance(param2, Agregation):
             return self(self(param2.prop1, param2.prop2, param2.conector), param1, conector)
         if isinstance(param1, Proposition):
-            #print(param1.fuzzyvar.name, param1.fuzzyset, self.inputs[param1.fuzzyvar.name])
             param1 = param1.fuzzyvar.get(param1.fuzzyset).eval(self.inputs[param1.fuzzyvar.name])
         if isinstance(param2, Proposition):
-            #print(param2.fuzzyvar.name, param2.fuzzyset,self.inputs[param2.fuzzyvar.name])
             param2 = param2.fuzzyvar.get(param2.fuzzyset).eval(self.inputs[param2.fuzzyvar.name])
-        #logging.debug("Debug: ",param1, conector, param2, '=', conector(param1, param2))
-        return conector(param1, param2)
+        if conector==min:
+            return self.and_op(param1, param2)
+        else:
+            return self.or_op(param1, param2)
 
 class Proposition:
     def __init__(self, fuzzyvar, fuzzyset):
@@ -79,9 +83,9 @@ class Agregation:
         self.parent = Agregation(self, other, max)
         return self.parent
     
-    def eval(self,x):
+    def eval(self,x, and_op=minimum, or_op=maximum):
         #logging.debug("Debug: ", "Agregation inputs:", dict(x) )
-        op = Conector(self.conector, dict(x))
+        op = Conector(self.conector, dict(x), and_op, or_op)
         return op(self.prop1, self.prop2, self.conector)
     
     def __str__(self):
@@ -110,25 +114,19 @@ class Antecedent:
     def add(self, other):
         self.propositions.append(other)
         
-    def eval(self, x):
+    def eval(self, x, and_op=minimum, or_op=maximum):
         if isinstance(self.propositions, (Agregation,)):
-            #logging.debug("Debug: Evaluation: preposition is Agregation")
-            return self.propositions.eval(x)
+            return self.propositions.eval(x, and_op, or_op)
         
         if isinstance(x, (dict,)):
-            #x = list(x)
             x = list(zip(x.keys(), x.values()))
             
-        if isinstance(x, (list,)):
+        if isinstance(x, (list, np.ndarray,)):
             result = []
-#             for variable, value in x:
-#                 fvar = self.get(variable)
-#                 if fvar:
-#                     result.append(fvar.eval(value))
             result = [self.get(variable).eval(value) for variable, value in x if self.get(variable) ]
             if self.conector is not None:
                 return self.conector(result)
-            return result    
+            return result
         else:
             return self.get(x[0]).eval(x[1])
         
@@ -175,7 +173,7 @@ class Consequent:
 #         if isinstance(x, (dict,)):
 #             x = list(zip(x.keys(), x.values()))
             
-        if isinstance(x, (list,)):
+        if isinstance(x, (list,np.ndarray,)):
             for prop in self.propositions:
                 result.append((prop.fuzzyvar.name, prop.getfuzzyset().cut(x[0])))
             return result
@@ -205,9 +203,11 @@ class Consequent:
 
 
 class FuzzyRule():
-    def __init__(self, antecedent=None, consequent=None, conector=None):
+    def __init__(self, antecedent=None, consequent=None, conector=None, and_op=minimum, or_op=maximum):
         self.antecedent = antecedent
-        
+        self.and_op = and_op
+        self.or_op = or_op
+    
         if isinstance(consequent, (list,Consequent,)):
             self.consequent = consequent
         else:
@@ -215,11 +215,11 @@ class FuzzyRule():
             self.consequent = [consequent]
         self.conector = conector
         
-    def eval(self, x):
-        #print("\nDEBUG: Fuzzy Rule Evaluation")
-        firing_strength = self.antecedent.eval(x)
+    def eval(self, x, and_op=minimum, or_op=maximum):
+        self.and_op = and_op
+        self.or_op = or_op
+        firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
         print('\t{} = {}'.format(str(self), firing_strength))
-        #logging.debug("Debug: Firing Strength: ", firing_strength)
         if isinstance(self.consequent, (Consequent,)):
             return self.consequent.eval(firing_strength)
         return [prop.eval(firing_strength) for prop in self.consequent]
