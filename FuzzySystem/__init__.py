@@ -9,5 +9,6 @@ import logging, sys
 
 
 from . import MembershipFunction as mf, FuzzySet, FuzzyVariable, FuzzyInferenceSystem, Defuzzifier
-from .FuzzyInferenceSystem.fuzzyrule import Antecedent, Consequent, FuzzyRule
+from .FuzzyInferenceSystem.fuzzyrule import Antecedent, Consequent, FuzzyRule 
+from .FuzzyInferenceSystem.output import Output
 #from MembershipFunction import from .membership_function import Trimf, Gaussmf, Trapmf, Sigmoidmf, GBellmf, Logmf, Cauchymf, Tanhmf

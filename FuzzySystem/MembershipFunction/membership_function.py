@@ -38,7 +38,7 @@ class MembershipFunction:
     def spread(self):
         pass
     
-    def show(self, points=default_points):
+    def show(self, points=config.default_points):
         #interval = (self.universe[1] - self.universe[0])/100.0
         #u = np.arange(self.universe[0], self.universe[1], interval)
         u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
@@ -97,10 +97,10 @@ class Logmf(MembershipFunction):
     name = 'Logistic mf'
     
     def eval(self, x):
-        a = self.params[0] 
-        c = self.params[1]
+        self.a = self.params[0] 
+        self.c = self.params[1]
         #return 1./(1+np.exp(-x))
-        return 2./(1+np.exp(((x-c)/a)**2))
+        return 2./(1+np.exp(((x-self.c)/self.a)**2))
     
     @property
     def spread(self):
@@ -110,9 +110,9 @@ class Tanhmf(MembershipFunction):
     name = 'Tanh mf'
     
     def eval(self, x):
-        a = self.params[0] 
-        c = self.params[1]
-        y = 1+np.tanh(-1*((x-c)/a)**2)
+        self.a = self.params[0] 
+        self.c = self.params[1]
+        y = 1+np.tanh(-1*((x-self.c)/self.a)**2)
         return y
     
     @property
@@ -124,9 +124,9 @@ class Sigmoidmf(MembershipFunction):
     name = 'Sigmoid mf'
     
     def eval(self, x):
-        a = self.params[0] 
-        c = self.params[1]
-        y = 1./(1 + np.exp(-a*(x-c)))
+        self.a = self.params[0] 
+        self.c = self.params[1]
+        y = 1./(1 + np.exp(-self.a*(x-self.c)))
         return y
     
     @property
@@ -138,9 +138,9 @@ class Cauchymf(MembershipFunction):
     name = 'Cauchy mf'
     
     def eval(self, x):
-        a = self.params[0] 
-        c = self.params[1]
-        y = 1./(1+((x-c)/a)**2)
+        self.a = self.params[0] 
+        self.c = self.params[1]
+        y = 1./(1+((x-self.c)/self.a)**2)
         return y
     
     @property
