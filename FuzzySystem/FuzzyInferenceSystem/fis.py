@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import itertools
 import logging, sys
 from .output import Output
-
+from .fuzzyrule import TSKConsequent
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
 
 class FuzzyInferenceSystem:
@@ -13,6 +13,14 @@ class FuzzyInferenceSystem:
         
         self.and_op = None
         self.or_op = None
+
+        self.type='Mamdani'
+        for r in rules:
+            if isinstance(r.consequent, (TSKConsequent,)):
+                self.type = 'Sugeno'
+            else:
+                if self.type=='Sugeno':
+                    raise Exception('The FIS must has only one type of Consequent')
 
         if isinstance(and_op, (str,)):
             if and_op == 'min':
@@ -54,9 +62,13 @@ class FuzzyInferenceSystem:
         
     def eval(self, inputs):
         print('\nEvaluation of FIS with inputs:')
-        for k in inputs.keys():
-            print('{}: {}'.format(k, inputs[k]))
-        return Output([rule.eval(inputs, and_op=self.and_op, or_op=self.or_op) for rule in self.rules])
+        if isinstance(inputs, (tuple,)):
+            for t in inputs:
+                print(t)
+        elif isinstance(inputs, (dict,)):     
+            for k in inputs.keys():
+                print('{}: {}'.format(k, inputs[k]))
+        return Output([rule.eval(inputs, and_op=self.and_op, or_op=self.or_op) for rule in self.rules], type=self.type)
     
     
     # def _discretize(self, universe):

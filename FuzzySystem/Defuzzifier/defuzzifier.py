@@ -17,13 +17,29 @@ class Defuzzifier:
         elif isinstance(output, (list,)):
             self.output = output
         else:
-            raise "Output must be a List of rules' output or Output object"
+            raise "Output must be a List of rules' output or an Output object"
         self.universe = universe
         self.samples = samples
     
     def eval(self):
         pass
 
+class TSKDefuzzifier:
+    name = "TSK Defuzzifier"
+    def __init__(self, output):
+        if isinstance(output, (Output,)):
+            if output.type == 'Sugeno':
+                self.g = output.get_array()
+                self.f = output.firing_strength
+            else:
+                raise Exception("Output must be result of TSK Consequents")
+        else: 
+            raise Exception("Output must be a List of rules' output or an Output object")
+    
+    def eval(self):
+        return np.sum(self.f * self.g)/np.sum(self.f)
+
+        
 class Aggregator():
     def __init__(self, fuzzySets):
         self.fuzzySets = fuzzySets
@@ -128,3 +144,5 @@ class FirstOfMaximum(Defuzzifier):
             argmax = u[m==np.max(m)]
             self.G[name] = np.min(argmax)
         return self.G
+
+    

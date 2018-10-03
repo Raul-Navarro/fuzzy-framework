@@ -6,9 +6,15 @@ import logging, sys
 #from ..Defuzzifier.defuzzifier  import Defuzzifier
 
 class Output:
-    def __init__(self, fuzzy_output, universe=None):
-        self._outputs = fuzzy_output
-        #self._universe = universe
+    def __init__(self, fuzzy_output, universe=None, type='Mamdani'):
+        self.type = type
+
+        if self.type == 'Sugeno':
+            self._outputs, self.firing_strength = zip(*fuzzy_output)
+            self.firing_strength = np.squeeze(np.array(self.firing_strength))
+            self._outputs = np.array(self._outputs)
+        else:
+            self._outputs = fuzzy_output
     
     def get_array(self):
         return self._outputs
@@ -26,7 +32,10 @@ class Output:
 
 
     def get_outputs(self):
-        return Output.output_toDict(self._outputs).keys()
+        if self.type == 'Mamdani':
+            return Output.output_toDict(self._outputs).keys()
+        elif self.type == 'Sugeno':
+            return self.get_array()
     
     # def get_points(self, name):
     #     if not name in self.get_outputs():
@@ -54,7 +63,9 @@ class Output:
     #     return self._outputs[name]
 
     def show(self, defuzzifier=None):
-        i = 1
+        if self.type=='Sugeno':
+            return None
+            
         u = None
         i = 1
         consequents = Output.output_toDict(self._outputs)

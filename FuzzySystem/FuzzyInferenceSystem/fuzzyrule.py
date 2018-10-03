@@ -202,13 +202,43 @@ class Consequent:
 
 
 
+class TSKConsequent():
+    def __init__(self, params, function, label='f'):
+        if isinstance(params, (list, np.ndarray)):
+            self.params = params
+        else:
+            raise ValueError("parameters must be an array")
+
+        if callable(function):
+            self.function = function
+        else:
+            raise ValueError("'function' must be callable")
+        self.name = label
+
+    def set_params(self, params):
+        if isinstance(params, (list, np.ndarray)):
+            self.params = params
+    
+    def get_params(self):
+        return self.params
+
+    def eval(self,x, firing_strength, and_op=algebraic_prod):
+        if and_op == None:
+            return self.function(*x, *self.params)
+        return and_op(self.function(*x, *self.params), firing_strength)
+
+    def __str__(self):
+        return self.name
+    
+
+
 class FuzzyRule():
     def __init__(self, antecedent=None, consequent=None, conector=None, and_op=minimum, or_op=maximum):
         self.antecedent = antecedent
         self.and_op = and_op
         self.or_op = or_op
     
-        if isinstance(consequent, (list,Consequent,)):
+        if isinstance(consequent, (list,Consequent,TSKConsequent,)):
             self.consequent = consequent
         else:
             #Proposition class
@@ -218,10 +248,19 @@ class FuzzyRule():
     def eval(self, x, and_op=minimum, or_op=maximum):
         self.and_op = and_op
         self.or_op = or_op
-        firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
+        if isinstance(x, (tuple,)):
+            firing_strength = self.antecedent.eval(dict(x), self.and_op, self.or_op)
+        else:
+            firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
         print('\t{} = {}'.format(str(self), firing_strength))
         if isinstance(self.consequent, (Consequent,)):
             return self.consequent.eval(firing_strength)
+        elif isinstance(self.consequent, (TSKConsequent)):
+            if isinstance(x, (tuple,)):
+                name,values = zip(*x)
+                return (self.consequent.eval(values, None, None),firing_strength)
+            else:
+                raise ValueError("Inputs must be a tuple '((name, value))'")
         return [prop.eval(firing_strength) for prop in self.consequent]
     
     def __str__(self):
@@ -231,6 +270,8 @@ class FuzzyRule():
         if isinstance(self.consequent, (list,)):
             return "IF {} THEN {}".format(str(self.antecedent), 
                                       ' and '.join([str(cons) for cons in self.consequent]))
+        if isinstance(self.consequent, (TSKConsequent,)):
+            return "IF {} THEN {}".format(str(self.antecedent), str(self.consequent))
         
     def show(self):
         print(self)
