@@ -70,6 +70,22 @@ class FuzzyInferenceSystem:
                 print('{}: {}'.format(k, inputs[k]))
         return Output([rule.eval(inputs, and_op=self.and_op, or_op=self.or_op) for rule in self.rules], type=self.type)
     
+    @property
+    def inputs(self):
+        input = {}
+        for rule in self.rules:
+            input.update(rule.inputs)
+        return input
+
+    @property
+    def outputs(self):
+        output = {}
+        for rule in self.rules:
+            output.update(rule.outputs)
+        return output
+
+    def get_structure(self):
+        pass
     
     # def _discretize(self, universe):
     #     u = np.linspace(universe[0], universe[1], num=self.points, endpoint=True, retstep=False, dtype=None)

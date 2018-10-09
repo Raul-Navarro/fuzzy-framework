@@ -1,6 +1,10 @@
 import copy
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
+from ..FuzzyVariable import fuzzyvariable as fv
+#from ..FuzzyVariable.fuzzyvariable import FuzzyVariable
 import numpy as np
+import itertools
+
 
 class Conector:
     def __init__(self, operator, inputs = None, and_op=minimum, or_op=maximum):
@@ -65,6 +69,7 @@ class Agregation:
         self.prop2 = prop2
         self.conector = conector
         self.parent = None
+        self.__fuzzyvariables = None
         
     def __and__(self, other):
         #print(self, other)
@@ -88,6 +93,21 @@ class Agregation:
         op = Conector(self.conector, dict(x), and_op, or_op)
         return op(self.prop1, self.prop2, self.conector)
     
+    @property
+    def fuzzy_variables(self):
+        self.__fuzzyvariables = {}
+        self._inorder(self)
+        return self.__fuzzyvariables
+        #return [(obj.name, obj) for obj in list(itertools.chain.from_iterable(self._inorder(self))) if isinstance(obj, (fv.FuzzyVariable))]
+
+    def _inorder(self, node):
+        if isinstance(node, Agregation):
+            self._inorder(node.prop1)
+            self._inorder(node.prop2)
+        if isinstance(node, Proposition):
+            if node.fuzzyvar.name not in self.__fuzzyvariables.keys():
+                self.__fuzzyvariables[node.fuzzyvar.name] = node.fuzzyvar
+            
     def __str__(self):
         return 'TODO'
 
@@ -98,11 +118,18 @@ class Antecedent:
             self.propositions = []
         else:
             if isinstance(proposition, (list, Agregation, )):
-                #logging.debug("Debug: Constructor: preposition is Agregation")
                 self.propositions = proposition
             else:
                 self.propositions = [proposition]
-    
+    @property
+    def fuzzy_variables(self):
+        if isinstance(self.propositions, (Agregation,)):
+            return self.propositions.fuzzy_variables
+        elif isinstance(self.propositions, (list,)):
+            return dict([(p.fuzzyvar.name, p.fuzzyvar) for p in self.propositions])
+        else:
+            raise Exception('Propositions must be either an array or Agregation object')
+
     def get(self, variable):
         for prop in self.propositions:
             ##print('Debug: ', prop[0].name)
@@ -112,7 +139,10 @@ class Antecedent:
         return None
         
     def add(self, other):
-        self.propositions.append(other)
+        if isinstance(self.propositions, (list,)):
+            self.propositions.append(other)
+        else:
+            raise Exception('Propositions must be a list to use "add" method')
         
     def eval(self, x, and_op=minimum, or_op=maximum):
         if isinstance(self.propositions, (Agregation,)):
@@ -153,6 +183,10 @@ class Consequent:
             else:
                 self.propositions = [proposition]
     
+    @property
+    def fuzzy_variables(self):
+        return dict([(p.fuzzyvar.name, p.fuzzyvar) for p in self.propositions])
+
     def get(self, variable):
         for prop in self.propositions:
             if(variable == prop[0].name):
@@ -213,7 +247,7 @@ class TSKConsequent():
             self.function = function
         else:
             raise ValueError("'function' must be callable")
-        self.name = label
+        self.name = self.function.__name__
 
     def set_params(self, params):
         if isinstance(params, (list, np.ndarray)):
@@ -228,7 +262,7 @@ class TSKConsequent():
         return and_op(self.function(*x, *self.params), firing_strength)
 
     def __str__(self):
-        return self.name
+        return self.function.__name__
     
 
 
@@ -244,7 +278,18 @@ class FuzzyRule():
             #Proposition class
             self.consequent = [consequent]
         self.conector = conector
-        
+
+    @property    
+    def inputs(self):
+        return self.antecedent.fuzzy_variables
+
+    @property
+    def outputs(self):
+        if isinstance(self.consequent, (Consequent,)):
+            return self.consequent.fuzzy_variables
+        elif isinstance(self.consequent, (TSKConsequent,)):
+            return {self.consequent.name: self.consequent}
+
     def eval(self, x, and_op=minimum, or_op=maximum):
         self.and_op = and_op
         self.or_op = or_op
@@ -252,7 +297,9 @@ class FuzzyRule():
             firing_strength = self.antecedent.eval(dict(x), self.and_op, self.or_op)
         else:
             firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
+
         print('\t{} = {}'.format(str(self), firing_strength))
+
         if isinstance(self.consequent, (Consequent,)):
             return self.consequent.eval(firing_strength)
         elif isinstance(self.consequent, (TSKConsequent)):

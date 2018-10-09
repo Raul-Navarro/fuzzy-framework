@@ -93,7 +93,8 @@ def read_fis_file(file):
                     key, value = text.strip().split('=')
                     if key=='Range':
                         value = value.replace('[','').replace(']','')
-                        value = list(map(int,value.split(' ')))
+                        #value = list(map(int,value.split(' ')))
+                        value = list(map(float,value.split(' ')))
                         temp[key] = value
                     elif key == 'NumMFs':
                         temp[key] = int(value)
