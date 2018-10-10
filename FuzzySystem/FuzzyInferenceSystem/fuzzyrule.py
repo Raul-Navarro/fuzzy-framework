@@ -108,8 +108,20 @@ class Agregation:
             if node.fuzzyvar.name not in self.__fuzzyvariables.keys():
                 self.__fuzzyvariables[node.fuzzyvar.name] = node.fuzzyvar
             
+    def _to_string(self, node):
+        if isinstance(node, Agregation):
+            if self.conector == min:
+                return "{} and {}".format(self._to_string(node.prop1),self._to_string(node.prop2))
+            elif self.conector == max:
+                return "{} or {}".format(self._to_string(node.prop1),self._to_string(node.prop2))
+            else:
+                return None
+
+        if isinstance(node, Proposition):
+            return str(node)
+
     def __str__(self):
-        return 'TODO'
+        return self._to_string(self)
 
 class Antecedent:
     def __init__(self, proposition=None, conector = None):

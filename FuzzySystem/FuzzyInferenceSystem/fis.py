@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import itertools
 import logging, sys
 from .output import Output
-from .fuzzyrule import TSKConsequent
+from .fuzzyrule import TSKConsequent, Agregation
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
 
 class FuzzyInferenceSystem:
@@ -50,10 +50,11 @@ class FuzzyInferenceSystem:
                 self.rules = rules
             else:
                 self.rules = [rules]
+
         if inputs is not None:
-            self.inputs = inputs
+            self.all_inputs = inputs
         if outputs is not None:
-            self.outputs = outputs
+            self.all_outputs = outputs
             
     def show_rules(self):
         print("\nFuzzy System Rules:")
@@ -83,6 +84,16 @@ class FuzzyInferenceSystem:
         for rule in self.rules:
             output.update(rule.outputs)
         return output
+
+    @property
+    def matrix_rules(self):
+        input = self.inputs
+        output = self.outputs
+        for rule in self.rules:
+            if isinstance(rule.antecedent, (list,)):
+                for proposition in rule.antecedent:
+                    print(proposition)
+        
 
     def get_structure(self):
         pass

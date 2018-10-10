@@ -3,7 +3,7 @@ from .FuzzyVariable.fuzzyvariable import FuzzyVariable
 from .FuzzySet.fuzzyset import FuzzySet
 from .FuzzyInferenceSystem.fis import FuzzyInferenceSystem
 from .FuzzyInferenceSystem.fuzzyrule import FuzzyRule, Antecedent, Consequent 
-
+import numpy as np
  
 """
 Membership functions in matlab: 

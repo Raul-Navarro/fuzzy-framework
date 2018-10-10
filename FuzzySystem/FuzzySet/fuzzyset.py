@@ -7,11 +7,12 @@ from ..NonSingleton.nonsingleton import NonSingleton
 from ..fuzzy_operations import intersection
 
 class FuzzySet:
-    def __init__(self, name, mf):
+    def __init__(self, name, mf, fs_operator = 'min'):
         self.name = name
         self.mf = mf
         self.mf.name = name
         self.firing_strength = None
+        self.fs_operator = fs_operator
         
     @property
     def universe(self):
@@ -21,17 +22,20 @@ class FuzzySet:
     def universe(self, value):
         self.mf.universe = value
     
-    def eval(self, x, firing_strength=None, fs_operator = 'min'):
+    def eval(self, x, firing_strength=None, fs_operator = None):
+        if fs_operator != None:
+            self.fs_operator = fs_operator
+
         if isinstance(x, (NonSingleton,)):
-            fuzzy_ns_values = intersection(self.eval(x.values), x.eval(), type=fs_operator)
+            fuzzy_ns_values = intersection(self.eval(x.values), x.eval(), type=self.fs_operator)
             argmax = x.values[fuzzy_ns_values.argmax()]
             x = argmax
 
         if isinstance(x, (list,np.ndarray,)):
             if self.firing_strength is not None:
-                if fs_operator=='min':
+                if self.fs_operator=='min':
                     temp = [min(self.mf.eval(i), self.firing_strength) for i in x]
-                elif fs_operator=='prod':
+                elif self.fs_operator=='prod':
                     return [xi*self.firing_strength for xi in self.mf.eval(x)]
                 else:
                     raise "Firing strength operator must be either 'min' or 'prod'"
@@ -40,9 +44,9 @@ class FuzzySet:
                 return [self.mf.eval(i) for i in x]
         else:
             if self.firing_strength is not None:
-                if fs_operator=='min':
+                if self.fs_operator=='min':
                     return min(self.mf.eval(x), self.firing_strength)
-                elif fs_operator=='prod':
+                elif self.fs_operator=='prod':
                     return [xi*self.firing_strength for xi in self.mf.eval(x)]
                 else:
                     raise "Firing strength operator must be either 'min' or 'prod'"
@@ -61,14 +65,18 @@ class FuzzySet:
     
     def show(self, points = 100):
         u = np.linspace(self.mf.universe[0], self.mf.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
-        c = [self.mf.eval(e) for e in u]
+        c = self.eval(u)
 
         fig, ax = plt.subplots()
         plt.title('Fuzzy Set')
         ax.plot(u, c, 'r-', label=self.name)
         if self.firing_strength is not None:
-            ax.axhline(self.firing_strength, color='black', lw=2)
-        ax.axhline(0, color='black', lw=1)
+            _fs = self.firing_strength
+            self.firing_strength = None
+            ax.plot(u, self.eval(u), 'b--', label="{} {}".format("original",self.name), alpha=0.4)
+            self.firing_strength = _fs
+            del _fs
+            ax.axhline(self.firing_strength, color='black', lw=2, alpha=.5)
         legend = ax.legend(loc='upper left', shadow=True, fontsize='x-large')
         
         legend.get_frame().set_facecolor('#FFFFFF')
