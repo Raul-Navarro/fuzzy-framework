@@ -212,24 +212,15 @@ class Consequent:
         result = []
         if isinstance(x, (float,int,)):
             for prop in self.propositions:
-                #print('DEBUG Consequent propositions',prop)
                 result.append((prop.fuzzyvar.name, prop.getfuzzyset().cut(x)))
             return result
-            
-#         if isinstance(x, (dict,)):
-#             x = list(zip(x.keys(), x.values()))
+
             
         if isinstance(x, (list,np.ndarray,)):
             for prop in self.propositions:
                 result.append((prop.fuzzyvar.name, prop.getfuzzyset().cut(x[0])))
             return result
-#             #logging.debug("Debug: ", "Consequent: ", "eval number: ", x)
-#             result = [self.get(variable).eval(value) for variable, value in x if self.get(variable)]
-#             if self.conector:
-#                 return self.conector(result)
-#             return result    
-#         if isinstance(tuple,):
-#             return self.get(x[0]).eval(x[1])
+
         
     def __str__(self):
         if isinstance(self.propositions, (list)):
@@ -249,7 +240,7 @@ class Consequent:
 
 
 class TSKConsequent():
-    def __init__(self, params, function, label='f'):
+    def __init__(self, params, function, label=None):
         if isinstance(params, (list, np.ndarray)):
             self.params = params
         else:
@@ -259,7 +250,11 @@ class TSKConsequent():
             self.function = function
         else:
             raise ValueError("'function' must be callable")
-        self.name = self.function.__name__
+
+        if label != None:
+            self.name = label
+        else:
+            self.name = self.function.__name__
 
     def set_params(self, params):
         if isinstance(params, (list, np.ndarray)):

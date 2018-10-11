@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import itertools
 import logging, sys
 from .output import Output
-from .fuzzyrule import TSKConsequent, Agregation
+from .fuzzyrule import TSKConsequent, Agregation, FuzzyRule
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
 
 class FuzzyInferenceSystem:
@@ -14,14 +14,19 @@ class FuzzyInferenceSystem:
         self.and_op = None
         self.or_op = None
 
-        self.type='Mamdani'
+        self.type=None
         for r in rules:
             if isinstance(r.consequent, (TSKConsequent,)):
-                self.type = 'Sugeno'
+                if self.type == 'Mamdani':
+                    raise Exception('The FIS must has only one type of Consequent')
+                else:
+                    self.type = 'Sugeno'
             else:
                 if self.type=='Sugeno':
                     raise Exception('The FIS must has only one type of Consequent')
-
+                else: 
+                    self.type = 'Mamdani'
+                
         if isinstance(and_op, (str,)):
             if and_op == 'min':
                 self.and_op = minimum
@@ -45,6 +50,7 @@ class FuzzyInferenceSystem:
             self.or_op = or_op
 
         self.points = points
+
         if rules: 
             if isinstance(rules, (list,)):
                 self.rules = rules
@@ -55,7 +61,12 @@ class FuzzyInferenceSystem:
             self.all_inputs = inputs
         if outputs is not None:
             self.all_outputs = outputs
-            
+    
+    
+    def add_rule(self, rule):
+        if isinstance(rule, (FuzzyRule,)):
+            self.rules.append(rule)
+
     def show_rules(self):
         print("\nFuzzy System Rules:")
         for r in self.rules:
