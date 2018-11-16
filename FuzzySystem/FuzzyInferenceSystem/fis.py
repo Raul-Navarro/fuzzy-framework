@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import itertools
 import logging, sys
 from .output import Output
-from .fuzzyrule import TSKConsequent, Agregation, FuzzyRule
+from .fuzzyrule import TSKConsequent, Agregation, FuzzyRule, Antecedent, Consequent
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
 
 class FuzzyInferenceSystem:
@@ -98,16 +98,57 @@ class FuzzyInferenceSystem:
 
     @property
     def matrix_rules(self):
+        mat = []
         input = self.inputs
         output = self.outputs
         for rule in self.rules:
-            if isinstance(rule.antecedent, (list,)):
-                for proposition in rule.antecedent:
-                    print(proposition)
+            r_mat = []
+            if isinstance(rule.antecedent, (list,Antecedent,)):
+                for proposition in rule.antecedent.propositions:
+                    r_mat = r_mat + [proposition.get_tuple()]
+            if isinstance(rule.consequent, (list,Consequent,)):
+                for proposition in rule.consequent.propositions:
+                    r_mat = r_mat + [proposition.get_tuple()]
+            mat.append(r_mat)
+        return mat
         
+    def get_matrix_rules(self):
+        inputs_id = dict(zip(self.inputs.keys(),range(0, len(self.inputs.keys()))))
+        outputs_id = dict(zip(self.outputs.keys(),range(0, len(self.outputs.keys()))))
+    
+        outputs_classes_id = {}
+        for i,k in enumerate(self.outputs.keys()):
+            fsets_names = [f.name for f in self.outputs[k].fuzzysets]
+            outputs_classes_id[i]=dict(zip(fsets_names,range(0, len(fsets_names))))
+
+        fuzzysets_id = {}
+        for i,k in enumerate(self.inputs.keys()):
+            fsets_names = [f.name for f in self.inputs[k].fuzzysets]
+            fuzzysets_id[i]=dict(zip(fsets_names,range(1, len(fsets_names)+1)))
+        
+        mrules = []
+        for r in self.matrix_rules:
+            temp = []
+            d = dict(r)
+            for i,k in enumerate(self.inputs.keys()):
+                if k in d.keys():
+                    temp = temp + [fuzzysets_id[i][d[k]]]
+            for i,o in enumerate(self.outputs.keys()):
+                temp = temp + [outputs_classes_id[i][d[o]]]
+            mrules.append(temp)
+        return mrules
+
+
+
 
     def get_structure(self):
-        pass
+        structure = {}
+        name_dict = {'Gaussian mf':'gaussmf'}
+        for k in self.inputs.keys():
+            structure[k] = []
+            structure[k] = structure[k] + [[name_dict[f.mf.name],
+                                [f.name, f.mf.params,f.universe]] for f in self.inputs[k].fuzzysets]
+        return structure
     
     # def _discretize(self, universe):
     #     u = np.linspace(universe[0], universe[1], num=self.points, endpoint=True, retstep=False, dtype=None)

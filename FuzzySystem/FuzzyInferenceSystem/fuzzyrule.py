@@ -63,6 +63,9 @@ class Proposition:
     def __str__(self):
         return "{} is {}".format(self.fuzzyvar.name, self.fuzzyset)
     
+    def get_tuple(self):
+        return (self.fuzzyvar.name, self.fuzzyset)
+    
 class Agregation:
     def __init__(self, prop1, prop2, conector):
         self.prop1 = prop1

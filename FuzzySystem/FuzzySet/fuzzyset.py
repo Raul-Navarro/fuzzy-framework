@@ -10,7 +10,7 @@ class FuzzySet:
     def __init__(self, name, mf, fs_operator = 'min'):
         self.name = name
         self.mf = mf
-        self.mf.name = name
+        #self.mf.name = name
         self.firing_strength = None
         self.fs_operator = fs_operator
         
