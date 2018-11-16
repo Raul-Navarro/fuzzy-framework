@@ -277,10 +277,11 @@ class TSKConsequent():
 
 
 class FuzzyRule():
-    def __init__(self, antecedent=None, consequent=None, conector=None, and_op=minimum, or_op=maximum):
+    def __init__(self, antecedent=None, consequent=None, conector=None, and_op=minimum, or_op=maximum, weight=1):
         self.antecedent = antecedent
         self.and_op = and_op
         self.or_op = or_op
+        self.weight = weight
     
         if isinstance(consequent, (list,Consequent,TSKConsequent,)):
             self.consequent = consequent
@@ -307,9 +308,15 @@ class FuzzyRule():
             firing_strength = self.antecedent.eval(dict(x), self.and_op, self.or_op)
         else:
             firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
-
-        print('\t{} = {}'.format(str(self), firing_strength))
-
+        
+            
+        print('\t{} = {} with weight = {}'.format(str(self),firing_strength, self.weight))
+        
+        if isinstance(firing_strength, (list,tuple,np.ndarray,)):
+            firing_strength = [fs*self.weight for fs in firing_strength]
+        else:
+            firing_strength = firing_strength * self.weight
+        
         if isinstance(self.consequent, (Consequent,)):
             return self.consequent.eval(firing_strength)
         elif isinstance(self.consequent, (TSKConsequent)):

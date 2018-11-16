@@ -109,6 +109,7 @@ class FuzzyInferenceSystem:
             if isinstance(rule.consequent, (list,Consequent,)):
                 for proposition in rule.consequent.propositions:
                     r_mat = r_mat + [proposition.get_tuple()]
+            r_mat = r_mat + [("weight", rule.weight)]
             mat.append(r_mat)
         return mat
         
@@ -133,6 +134,9 @@ class FuzzyInferenceSystem:
             for i,k in enumerate(self.inputs.keys()):
                 if k in d.keys():
                     temp = temp + [fuzzysets_id[i][d[k]]]
+            #Add rule weight to matrix_rules
+            temp = temp + [d["weight"]]
+            
             for i,o in enumerate(self.outputs.keys()):
                 temp = temp + [outputs_classes_id[i][d[o]]]
             mrules.append(temp)
