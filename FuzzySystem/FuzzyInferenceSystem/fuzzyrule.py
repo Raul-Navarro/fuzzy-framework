@@ -64,7 +64,6 @@ class Proposition:
     
     def getfuzzyset(self):
         result = self.fuzzyvar.get(self.fuzzyset)
-        print(result)
         if result is not None:
             if self.__complement:
                 resultcpy = copy.copy(result)
@@ -79,7 +78,11 @@ class Proposition:
             return "{} is {}".format(self.fuzzyvar.name, self.fuzzyset)
     
     def get_tuple(self):
-        return (self.fuzzyvar.name, self.fuzzyset)
+        if self.__complement:
+            fuzzyset = "not "+self.fuzzyset
+        else:
+            fuzzyset = self.fuzzyset
+        return (self.fuzzyvar.name, fuzzyset)
     
 class Agregation:
     def __init__(self, prop1, prop2, conector):
@@ -125,7 +128,22 @@ class Agregation:
         if isinstance(node, Proposition):
             if node.fuzzyvar.name not in self.__fuzzyvariables.keys():
                 self.__fuzzyvariables[node.fuzzyvar.name] = node.fuzzyvar
-            
+    
+    
+    def get_tuples(self):
+        rule = self._get_string_tuples(self).split(":")
+        rule = [r for r in rule if r not in ["", " "]]
+        rule = [tuple(r.split(" is ")) for r in rule]
+        return rule
+        
+        
+    def _get_string_tuples(self, node):
+        if isinstance(node, Agregation):
+            if self.conector == min or self.conector == max:
+                return "{}:{}".format(self._to_string(node.prop1),self._to_string(node.prop2))
+            else:
+                return None
+    
     def _to_string(self, node):
         if isinstance(node, Agregation):
             if self.conector == min:

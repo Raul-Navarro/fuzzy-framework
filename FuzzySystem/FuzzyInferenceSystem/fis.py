@@ -104,8 +104,11 @@ class FuzzyInferenceSystem:
         for rule in self.rules:
             r_mat = []
             if isinstance(rule.antecedent, (list,Antecedent,)):
-                for proposition in rule.antecedent.propositions:
-                    r_mat = r_mat + [proposition.get_tuple()]
+                if isinstance(rule.antecedent.propositions, (Agregation,)):
+                    r_mat = rule.antecedent.propositions.get_tuples()
+                else:
+                    for proposition in rule.antecedent.propositions:
+                        r_mat = r_mat + [proposition.get_tuple()]
             if isinstance(rule.consequent, (list,Consequent,)):
                 for proposition in rule.consequent.propositions:
                     r_mat = r_mat + [proposition.get_tuple()]
@@ -113,7 +116,7 @@ class FuzzyInferenceSystem:
             mat.append(r_mat)
         return mat
         
-    def get_matrix_rules(self):
+    def get_matrix_rules(self, negatives=True):
         inputs_id = dict(zip(self.inputs.keys(),range(0, len(self.inputs.keys()))))
         outputs_id = dict(zip(self.outputs.keys(),range(0, len(self.outputs.keys()))))
     
@@ -133,15 +136,24 @@ class FuzzyInferenceSystem:
             d = dict(r)
             for i,k in enumerate(self.inputs.keys()):
                 if k in d.keys():
-                    temp = temp + [fuzzysets_id[i][d[k]]]
+                    #If the proposition have the complement of fuzzy set
+                    if "not " in d[k]:
+                        name = d[k].replace("not ", "")
+                        if negatives:
+                            temp = temp + [-fuzzysets_id[i][name]]
+                        else:
+                            temp = temp + [fuzzysets_id[i][name]]
+                    else:
+                        temp = temp + [fuzzysets_id[i][d[k]]]
+                else:
+                    temp = temp + [0]
             #Add rule weight to matrix_rules
             temp = temp + [d["weight"]]
-            
             for i,o in enumerate(self.outputs.keys()):
                 temp = temp + [outputs_classes_id[i][d[o]]]
             mrules.append(temp)
         return mrules
-
+        
 
 
 
