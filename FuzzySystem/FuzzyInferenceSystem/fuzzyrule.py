@@ -64,6 +64,7 @@ class Proposition:
     
     def getfuzzyset(self):
         result = self.fuzzyvar.get(self.fuzzyset)
+        print(result)
         if result is not None:
             if self.__complement:
                 resultcpy = copy.copy(result)

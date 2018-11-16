@@ -65,7 +65,7 @@ class FuzzySet:
     
     def complement(self):
         self.mf.complement()
-        return self.mf
+        return self
     
     def show(self, points = 100):
         u = np.linspace(self.mf.universe[0], self.mf.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
