@@ -23,9 +23,11 @@ class Conector:
         if isinstance(param2, Agregation):
             return self(self(param2.prop1, param2.prop2, param2.conector), param1, conector)
         if isinstance(param1, Proposition):
-            param1 = param1.fuzzyvar.get(param1.fuzzyset).eval(self.inputs[param1.fuzzyvar.name])
+            #OLD: param1 = param1.fuzzyvar.get(param1.fuzzyset).eval(self.inputs[param1.fuzzyvar.name])
+            param1 = param1.getfuzzyset().eval(self.inputs[param1.fuzzyvar.name])
         if isinstance(param2, Proposition):
-            param2 = param2.fuzzyvar.get(param2.fuzzyset).eval(self.inputs[param2.fuzzyvar.name])
+            #OLD: param2 = param2.fuzzyvar.get(param2.fuzzyset).eval(self.inputs[param2.fuzzyvar.name])
+            param2 = param2.getfuzzyset().eval(self.inputs[param2.fuzzyvar.name])
         if conector==min:
             return self.and_op(param1, param2)
         else:
@@ -35,6 +37,7 @@ class Proposition:
     def __init__(self, fuzzyvar, fuzzyset):
         self.fuzzyvar = fuzzyvar
         self.fuzzyset = fuzzyset
+        self.__complement = False
         
     def __getitem__(self, index):
         if index is 0:
@@ -52,16 +55,27 @@ class Proposition:
         #print('Debug: ', self, 'OR', other)
         return Agregation(self, other, max)
     
+    def __invert__(self):
+        self.__complement = not self.__complement
+        return self
+    
     def add(self, other, conector):
         return Agregation(self, other, conector)
     
     def getfuzzyset(self):
         result = self.fuzzyvar.get(self.fuzzyset)
         if result is not None:
-            return copy.copy(result)
+            if self.__complement:
+                resultcpy = copy.copy(result)
+                return resultcpy.complement()
+            else:
+                return copy.copy(result)
         
     def __str__(self):
-        return "{} is {}".format(self.fuzzyvar.name, self.fuzzyset)
+        if self.__complement:
+            return "{} is not {}".format(self.fuzzyvar.name, self.fuzzyset)
+        else:
+            return "{} is {}".format(self.fuzzyvar.name, self.fuzzyset)
     
     def get_tuple(self):
         return (self.fuzzyvar.name, self.fuzzyset)
@@ -147,10 +161,10 @@ class Antecedent:
 
     def get(self, variable):
         for prop in self.propositions:
-            ##print('Debug: ', prop[0].name)
             if(variable == prop[0].name):
-                return prop[0].get(prop[1])
-        #print("Variable {} does not exist".format(variable))
+                #OLD: return prop[0].get(prop[1])
+                return prop.getfuzzyset()
+        #DEBUG print("Variable {} does not exist".format(variable))
         return None
         
     def add(self, other):

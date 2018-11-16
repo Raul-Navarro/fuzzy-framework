@@ -14,7 +14,8 @@ def divide(x,y):
 
 class MembershipFunction:
     name = 'Membership Function'
-    def __init__(self, params, name=None, universe=None):
+    def __init__(self, params, name=None, universe=None, complement=False):
+        self.__complement=complement
         self.params=params
         if name is not None:
             self.name = name
@@ -24,7 +25,16 @@ class MembershipFunction:
             self.universe=[self.params[0], self.params[-1]]
     
     def eval(self, x):
+        if self.__complement:
+            return 1-self.compute(x)
+        else:
+            return self.compute(x)
+    
+    def compute(self, x):
         pass
+    
+    def complement(self):
+        self.__complement = not self.__complement
     
     @property
     def area(self):
@@ -59,7 +69,7 @@ class MembershipFunction:
 class Trimf(MembershipFunction):
     name = 'Triangular mf'
     
-    def eval(self, x):
+    def compute(self, x):
         self.a = self.params[0]
         self.b = self.params[1]
         self.c = self.params[2]
@@ -78,7 +88,7 @@ class Trimf(MembershipFunction):
 class Gaussmf(MembershipFunction):
     name = 'Gaussian mf'
     
-    def eval(self, x):
+    def compute(self, x):
         self.sigma = self.params[0] 
         self.c = self.params[1]
         return np.exp(-1*(x - self.c)**2/(2.0*self.sigma**2))
@@ -96,7 +106,7 @@ class Gaussmf(MembershipFunction):
 class Logmf(MembershipFunction):
     name = 'Logistic mf'
     
-    def eval(self, x):
+    def compute(self, x):
         self.a = self.params[0] 
         self.c = self.params[1]
         #return 1./(1+np.exp(-x))
@@ -109,7 +119,7 @@ class Logmf(MembershipFunction):
 class Tanhmf(MembershipFunction):
     name = 'Tanh mf'
     
-    def eval(self, x):
+    def compute(self, x):
         self.a = self.params[0] 
         self.c = self.params[1]
         y = 1+np.tanh(-1*((x-self.c)/self.a)**2)
@@ -123,7 +133,7 @@ class Tanhmf(MembershipFunction):
 class Sigmoidmf(MembershipFunction):
     name = 'Sigmoid mf'
     
-    def eval(self, x):
+    def compute(self, x):
         self.a = self.params[0] 
         self.c = self.params[1]
         y = 1./(1 + np.exp(-self.a*(x-self.c)))
@@ -137,7 +147,7 @@ class Sigmoidmf(MembershipFunction):
 class Cauchymf(MembershipFunction):
     name = 'Cauchy mf'
     
-    def eval(self, x):
+    def compute(self, x):
         self.a = self.params[0] 
         self.c = self.params[1]
         y = 1./(1+((x-self.c)/self.a)**2)
@@ -151,7 +161,7 @@ class Cauchymf(MembershipFunction):
 class Trapmf(MembershipFunction):
     name = 'Trapezoidal mf'
     
-    def eval(self, x):
+    def compute(self, x):
         self.a = self.params[0]
         self.b = self.params[1]
         self.c = self.params[2]
@@ -172,7 +182,7 @@ class Trapmf(MembershipFunction):
 class GBellmf(MembershipFunction):
     name = 'Generalized Bell mf'
 
-    def eval(self, x):
+    def compute(self, x):
         self.a = self.params[0]
         self.b = self.params[1]
         self.c = self.params[2]

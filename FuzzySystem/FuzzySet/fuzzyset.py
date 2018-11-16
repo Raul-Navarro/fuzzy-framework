@@ -63,6 +63,10 @@ class FuzzySet:
         info = "\nname: {0}\nmembership function: {1}\nparams: {2} \nfiring strength:{3}\n"
         return info.format(self.name, self.mf.name,self.mf.params,self.firing_strength)
     
+    def complement(self):
+        self.mf.complement()
+        return self.mf
+    
     def show(self, points = 100):
         u = np.linspace(self.mf.universe[0], self.mf.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
         c = self.eval(u)
