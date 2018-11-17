@@ -38,7 +38,7 @@ class FuzzySet:
                 elif self.fs_operator=='prod':
                     return [xi*self.firing_strength for xi in self.mf.eval(x)]
                 else:
-                    raise "Firing strength operator must be either 'min' or 'prod'"
+                    raise Exception("Firing strength operator must be either 'min' or 'prod'")
                 return temp
             else:
                 return [self.mf.eval(i) for i in x]
@@ -49,7 +49,7 @@ class FuzzySet:
                 elif self.fs_operator=='prod':
                     return [xi*self.firing_strength for xi in self.mf.eval(x)]
                 else:
-                    raise "Firing strength operator must be either 'min' or 'prod'"
+                    raise Exception("Firing strength operator must be either 'min' or 'prod'")
             return self.mf.eval(x)
     
     def __call__(self, x):
@@ -73,16 +73,14 @@ class FuzzySet:
 
         fig, ax = plt.subplots()
         plt.title('Fuzzy Set')
-        ax.plot(u, c, 'r-', label=self.name)
+        ax.plot(u, c, '-', label=self.name)
         if self.firing_strength is not None:
             _fs = self.firing_strength
             self.firing_strength = None
-            ax.plot(u, self.eval(u), 'b--', label="{} {}".format("original",self.name), alpha=0.4)
+            ax.plot(u, self.eval(u), '--', label="{} {}".format("original",self.name), alpha=0.4)
             self.firing_strength = _fs
             del _fs
             ax.axhline(self.firing_strength, color='black', lw=2, alpha=.5)
-        legend = ax.legend(loc='upper left', shadow=True, fontsize='x-large')
-        
-        legend.get_frame().set_facecolor('#FFFFFF')
+        ax.legend(loc='best', fontsize='x-large', fancybox=True, framealpha=0.5)
         ax.grid()
         plt.show()

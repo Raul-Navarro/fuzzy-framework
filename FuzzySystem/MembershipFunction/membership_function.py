@@ -35,6 +35,7 @@ class MembershipFunction:
     
     def complement(self):
         self.__complement = not self.__complement
+        return self
     
     @property
     def area(self):
@@ -49,17 +50,17 @@ class MembershipFunction:
         pass
     
     def show(self, points=config.default_points):
-        #interval = (self.universe[1] - self.universe[0])/100.0
-        #u = np.arange(self.universe[0], self.universe[1], interval)
         u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
         c = [self.eval(e) for e in u]
-
         fig, ax = plt.subplots()
-        ax.plot(u, c, 'r-', label=self.name)
-        legend = ax.legend(loc='upper left', shadow=True, fontsize='x-large')
-        
-        legend.get_frame().set_facecolor('#FFFFFF')
+        ax.plot(u, c, '-', label=self.name)
+        ax.legend(loc='best', fontsize='x-large', fancybox=True, framealpha=0.5)
+        #legend.get_frame().set_facecolor('#FFFFFF')
         ax.grid()
+        if self.__complement:
+            plt.title("complement of {}".format(self.name))
+        else:
+            plt.title(self.name)
         plt.show()
     
     def __str__(self):

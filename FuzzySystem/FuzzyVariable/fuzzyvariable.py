@@ -33,8 +33,6 @@ class FuzzyVariable:
         return None
     
     def show(self, points=config.default_points):
-        #interval = (self.universe[1] - self.universe[0])/100.0
-        #u = np.arange(self.universe[0], self.universe[1], interval)
         u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
         members = []
         # Create plots with pre-defined labels.
@@ -45,9 +43,7 @@ class FuzzyVariable:
         #if self.firing_strength:
         #    ax.axhline(self.firing_strength, color='black', lw=2)
         ax.axhline(0, color='black', lw=1)
-        legend = ax.legend(loc='upper left', shadow=True, fontsize='x-large')
-        # Put a nicer background color on the legend.
-        legend.get_frame().set_facecolor('#FFFFFF')
+        ax.legend(loc='upper right', fontsize='x-large', fancybox=True, framealpha=0.5)
         ax.grid()
         plt.show()
     

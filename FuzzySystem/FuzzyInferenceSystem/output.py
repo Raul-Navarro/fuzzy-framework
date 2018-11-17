@@ -37,30 +37,6 @@ class Output:
         elif self.type == 'Sugeno':
             return self.get_array()
     
-    # def get_points(self, name):
-    #     if not name in self.get_outputs():
-    #         logging.error('get_points: variable name does not exist in output')
-    #         return None
-    #     return len(self.values(name))
-    
-    # def universe(self, name, range=None):
-    #     if not name in self.get_outputs():
-    #         logging.error('universe: variable name does not exist in output')
-    #         return None
-    #     if not range:
-    #         return self._universe[name]
-    #     elif range=='inf':
-    #         return self._universe[name][0]
-    #     elif range=='sup':
-    #         return self._universe[name][1]
-    #     elif range=='list':
-    #         return np.linspace(self.universe(name, 'inf'), self.universe(name, 'sup'), num=self.get_points(name), endpoint=True, retstep=False, dtype=None)
-    
-    # def values(self, name):
-    #     if not name in self.get_outputs():
-    #         logging.error('values: variable name does not exist in output')
-    #         return None
-    #     return self._outputs[name]
 
     def show(self, defuzzifier=None):
         if self.type=='Sugeno':
@@ -73,9 +49,9 @@ class Output:
             universe = consequents[key][0].universe
             plt.subplot(len(self.get_outputs()), 1, i)
             if i==1:
-                plt.title('Outputs', size=18)
+                plt.title('Output', size=14)
             i = i+1
-            plt.ylabel(key, size=18)
+            plt.ylabel(key, size=14)
             u = np.linspace(universe[0], universe[1], num=config.default_points, endpoint=True, retstep=False, dtype=None)
             for G in consequents[key]:
                 plt.fill_between(u, G.eval(u), 0, label=G.name)
@@ -91,7 +67,7 @@ class Output:
                         crisp = defuzzifier(self).eval()[key]
                         plt.axvline(x=crisp, lw=2)
                         plt.annotate("{}={:.3f}".format(defuzzifier.name, crisp), xy=(crisp, .5), xytext=(u[-10], 0.7),
-                                arrowprops=dict(arrowstyle="->",connectionstyle="arc3"), size=18)
+                                arrowprops=dict(arrowstyle="->",connectionstyle="arc3"), size=14)
                 plt.grid()                
         plt.xlabel('Universe')
         plt.show()
