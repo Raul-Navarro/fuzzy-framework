@@ -5,7 +5,9 @@ import itertools
 import logging, sys
 from .output import Output
 from .fuzzyrule import TSKConsequent, Agregation, FuzzyRule, Antecedent, Consequent
+from ..FuzzyVariable import fuzzyvariable
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
+
 
 class FuzzyInferenceSystem:
     def __init__(self, rules, points=config.default_points, defuzzifier=None,
@@ -13,19 +15,23 @@ class FuzzyInferenceSystem:
         
         self.and_op = None
         self.or_op = None
-
         self.type=None
-        for r in rules:
-            if isinstance(r.consequent, (TSKConsequent,)):
-                if self.type == 'Mamdani':
-                    raise Exception('The FIS must has only one type of Consequent')
+        self.all_inputs = inputs
+        self.all_outputs = outputs
+        self.rules = rules
+        
+        if rules:
+            for r in rules:
+                if isinstance(r.consequent, (TSKConsequent,)):
+                    if self.type == 'Mamdani':
+                        raise Exception('The FIS must has only one type of Consequent')
+                    else:
+                        self.type = 'Sugeno'
                 else:
-                    self.type = 'Sugeno'
-            else:
-                if self.type=='Sugeno':
-                    raise Exception('The FIS must has only one type of Consequent')
-                else: 
-                    self.type = 'Mamdani'
+                    if self.type=='Sugeno':
+                        raise Exception('The FIS must has only one type of Consequent')
+                    else: 
+                        self.type = 'Mamdani'
                 
         if isinstance(and_op, (str,)):
             if and_op == 'min':
@@ -56,12 +62,6 @@ class FuzzyInferenceSystem:
                 self.rules = rules
             else:
                 self.rules = [rules]
-
-        if inputs is not None:
-            self.all_inputs = inputs
-        if outputs is not None:
-            self.all_outputs = outputs
-    
     
     def add_rule(self, rule):
         if isinstance(rule, (FuzzyRule,)):
@@ -85,15 +85,29 @@ class FuzzyInferenceSystem:
     @property
     def inputs(self):
         input = {}
-        for rule in self.rules:
-            input.update(rule.inputs)
+        if self.all_inputs:
+            for fvar in self.all_inputs:
+                input[fvar.name] =  fvar
+        else:
+            for rule in self.rules:
+                input.update(rule.inputs)
         return input
 
     @property
     def outputs(self):
         output = {}
-        for rule in self.rules:
-            output.update(rule.outputs)
+        if self.all_outputs:
+            if isinstance(self.all_outputs[0], (fuzzyvariable.FuzzyVariable,)):
+                for fvar in self.all_outputs:
+                    output[fvar.name] =  fvar
+            elif isinstance(self.all_outputs[0], (str,)):
+                return self.all_outputs
+            else:
+                return output
+        else:
+            if self.rules:
+                for rule in self.rules:
+                    output.update(rule.outputs)
         return output
 
     @property
@@ -115,6 +129,7 @@ class FuzzyInferenceSystem:
             r_mat = r_mat + [("weight", rule.weight)]
             mat.append(r_mat)
         return mat
+    
         
     def get_matrix_rules(self, negatives=True):
         inputs_id = dict(zip(self.inputs.keys(),range(0, len(self.inputs.keys()))))
@@ -153,8 +168,6 @@ class FuzzyInferenceSystem:
                 temp = temp + [outputs_classes_id[i][d[o]]]
             mrules.append(temp)
         return mrules
-        
-
 
 
     def get_structure(self):
@@ -164,25 +177,11 @@ class FuzzyInferenceSystem:
             structure[k] = []
             structure[k] = structure[k] + [[name_dict[f.mf.name],
                                 [f.name, f.mf.params,f.universe]] for f in self.inputs[k].fuzzysets]
-        return structure
-    
-    # def _discretize(self, universe):
-    #     u = np.linspace(universe[0], universe[1], num=self.points, endpoint=True, retstep=False, dtype=None)
-    #     return u
-    
-    # def _agregation(self, outputs):
-    #     fuzzy_output = {}
-    #     universe = {}
-    #     for output_rule in outputs:
-    #         if len(output_rule)>1 and not isinstance(output_rule[0], (tuple,)):
-    #             output_rule = list(itertools.chain.from_iterable(output_rule))
-    #         output_rule = dict(output_rule)
-    #         for key in output_rule.keys():
-    #             if not key in fuzzy_output.keys():
-    #                 fuzzy_output[key] = []
-    #                 universe[key] = output_rule[key].universe
-    #             fuzzy_output[key].append(output_rule[key].eval(self._discretize(universe[key]),
-    #                                                           float(output_rule[key].firing_strength))) 
-    #     for key in fuzzy_output.keys():
-    #         fuzzy_output[key] = np.amax(fuzzy_output[key], axis=0)
-    #     return Output(fuzzy_output, universe)
+        output_list = []
+        outputs = self.outputs
+        if isinstance(outputs, (dict,)):
+            for k in outputs.keys():
+                output_list = output_list + [f.name for f in self.outputs[k].fuzzysets]
+        if isinstance(outputs, (list,)):
+            output_list = outputs
+        return {"inputs":structure, "outputs":output_list}
