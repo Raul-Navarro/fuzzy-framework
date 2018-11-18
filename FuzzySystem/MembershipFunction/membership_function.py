@@ -14,15 +14,17 @@ def divide(x,y):
 
 class MembershipFunction:
     name = 'Membership Function'
-    def __init__(self, params, name=None, universe=None, complement=False):
+    def __init__(self, params, universe=None, name=None, complement=False):
         self.__complement=complement
         self.params=params
         if name is not None:
             self.name = name
         if universe is not None:
             self.universe = universe
-        else:
+        elif self.params is not None:
             self.universe=[self.params[0], self.params[-1]]
+        else:
+            self.universe=[-10, 10]
     
     def eval(self, x):
         if self.__complement:
