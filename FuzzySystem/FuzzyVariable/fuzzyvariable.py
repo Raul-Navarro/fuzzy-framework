@@ -32,8 +32,18 @@ class FuzzyVariable:
                 return f
         return None
     
+    def discrete_universe(self, points=config.default_points, universe=None):
+        if universe == None:
+            universe = self.universe
+        u = np.linspace(universe[0], universe[1], num=points, endpoint=True, retstep=False, dtype=None)
+        supports = np.array([fs.mf.params for fs in self.fuzzysets]).flatten()
+        supports = list(set(supports) - set(np.intersect1d(supports, u)))
+        u = u[:-len(supports)]
+        u = np.sort(np.concatenate([u, supports], axis=0))
+        return u
+    
     def show(self, points=config.default_points, axes = None):
-        u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
+        u = self.discrete_universe(points)
         members = []
         if not axes:
             fig, ax = plt.subplots()

@@ -69,6 +69,8 @@ class FuzzySet:
     
     def show(self, points=config.default_points, axes = None):
         u = np.linspace(self.mf.universe[0], self.mf.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
+        u = np.sort(np.concatenate([u, self.mf.params], axis=0))
+        u = np.unique(u)
         c = self.eval(u)
         if not axes:
             fig, ax = plt.subplots()

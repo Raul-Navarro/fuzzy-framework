@@ -53,6 +53,8 @@ class MembershipFunction:
     
     def show(self, points=config.default_points, axes=None):
         u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
+        u = np.sort(np.concatenate([u, self.params], axis=0))
+        u = np.unique(u)
         c = [self.eval(e) for e in u]
         if not axes:
             fig, ax = plt.subplots()
