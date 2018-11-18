@@ -38,7 +38,7 @@ def union(x,y,type='max'):
     elif type=='sum':
         return np.squeeze(algebraic_sum(x,y))
     else:
-        raise "Union only by 'max' or 'sum'"
+        raise Exception("Union only by 'max' or 'sum'")
 
 def intersection(x,y,type='min'):
     if type=='min':
@@ -46,4 +46,4 @@ def intersection(x,y,type='min'):
     elif type=='prod':
         return np.squeeze(algebraic_prod(x,y))
     else:
-        raise "Intersection only by 'min' or 'prod'"
+        raise Exception("Intersection only by 'min' or 'prod'")
