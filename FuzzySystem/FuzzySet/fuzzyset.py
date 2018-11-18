@@ -67,11 +67,13 @@ class FuzzySet:
         self.mf.complement()
         return self
     
-    def show(self, points = 100):
+    def show(self, points=config.default_points, axes = None):
         u = np.linspace(self.mf.universe[0], self.mf.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
         c = self.eval(u)
-
-        fig, ax = plt.subplots()
+        if not axes:
+            fig, ax = plt.subplots()
+        else:
+            ax = axes
         plt.title('Fuzzy Set')
         ax.plot(u, c, '-', label=self.name)
         if self.firing_strength is not None:
@@ -83,4 +85,5 @@ class FuzzySet:
             ax.axhline(self.firing_strength, color='black', lw=2, alpha=.5)
         ax.legend(loc='best', fontsize='x-large', fancybox=True, framealpha=0.5)
         ax.grid()
-        plt.show()
+        if not axes:
+            plt.show()

@@ -51,10 +51,13 @@ class MembershipFunction:
     def spread(self):
         pass
     
-    def show(self, points=config.default_points):
+    def show(self, points=config.default_points, axes=None):
         u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
         c = [self.eval(e) for e in u]
-        fig, ax = plt.subplots()
+        if not axes:
+            fig, ax = plt.subplots()
+        else:
+            ax = axes
         ax.plot(u, c, '-', label=self.name)
         ax.legend(loc='best', fontsize='x-large', fancybox=True, framealpha=0.5)
         #legend.get_frame().set_facecolor('#FFFFFF')
@@ -63,7 +66,8 @@ class MembershipFunction:
             plt.title("complement of {}".format(self.name))
         else:
             plt.title(self.name)
-        plt.show()
+        if not axes:
+            plt.show()
     
     def __str__(self):
         return "class: {0} params: {1}".format(self.__class__.__name__, self.params)

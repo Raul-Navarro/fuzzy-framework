@@ -38,7 +38,7 @@ class Output:
             return self.get_array()
     
 
-    def show(self, defuzzifier=None):
+    def show(self, defuzzifier=None, points=config.default_points, axes = None, label = True):
         if self.type=='Sugeno':
             return None
             
@@ -47,30 +47,37 @@ class Output:
         consequents = Output.output_toDict(self._outputs)
         for key in self.get_outputs():
             universe = consequents[key][0].universe
-            plt.subplot(len(self.get_outputs()), 1, i)
+            #plt.subplot()#len(self.get_outputs()), 1, i)
+            if not axes:
+                fig, ax = plt.subplots()
+            else:
+                ax = axes
             if i==1:
-                plt.title('Output', size=14)
+                ax.set_title('Output', size=14)
             i = i+1
-            plt.ylabel(key, size=14)
-            u = np.linspace(universe[0], universe[1], num=config.default_points, endpoint=True, retstep=False, dtype=None)
+            ax.set_ylabel(key, size=14)
+            u = np.linspace(universe[0], universe[1], num=points, endpoint=True, retstep=False, dtype=None)
             for G in consequents[key]:
-                plt.fill_between(u, G.eval(u), 0, label=G.name)
+                ax.fill_between(u, G.eval(u), 0, label=G.name, alpha=0.85)
                 if defuzzifier is not None:
                     if isinstance(defuzzifier, (list,)):
                         for i,d in enumerate(defuzzifier):
                             crisp = d(self).eval()[key]
-                            plt.axvline(x=crisp,  lw=2)
-                            plt.annotate("{}={:.3f}".format(d.name, crisp),xy=(crisp, 0.05+i*0.05), 
-                                    xytext=(universe[1], 0.05+i*0.05),
-                                    arrowprops=dict(arrowstyle="->"), size=12)
+                            ax.axvline(x=crisp,  lw=2)
+                            if label:
+                                ax.annotate("{}={:.3f}".format(d.name, crisp),xy=(crisp, 0.1+i*0.1), 
+                                        xytext=(universe[1]+3, 0.1+i*0.1),
+                                        arrowprops=dict(arrowstyle="->"), size=14, family='sans-serif')
                     else:
                         crisp = defuzzifier(self).eval()[key]
-                        plt.axvline(x=crisp, lw=2)
-                        plt.annotate("{}={:.3f}".format(defuzzifier.name, crisp), xy=(crisp, .5), xytext=(u[-10], 0.7),
-                                arrowprops=dict(arrowstyle="->",connectionstyle="arc3"), size=14)
-                plt.grid()                
-        plt.xlabel('Universe')
-        plt.show()
+                        ax.axvline(x=crisp, lw=2)
+                        if label:
+                            ax.annotate("{}={:.3f}".format(defuzzifier.name, crisp), xy=(crisp, .5), xytext=(u[-10], 0.7),
+                                    arrowprops=dict(arrowstyle="->",connectionstyle="arc3"), size=14)
+                ax.grid()                
+        ax.set_xlabel('Universe')
+        if not axes:
+            plt.show()
     
     def __str__(self):
         return "Outputs: {}".format([str(name) for name in list(self.get_outputs())])

@@ -32,11 +32,13 @@ class FuzzyVariable:
                 return f
         return None
     
-    def show(self, points=config.default_points):
+    def show(self, points=config.default_points, axes = None):
         u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
         members = []
-        # Create plots with pre-defined labels.
-        fig, ax = plt.subplots()
+        if not axes:
+            fig, ax = plt.subplots()
+        else:
+            ax = axes
         ax.set_title(self.name)
         for fs in self.fuzzysets:
             ax.plot(u, [fs.eval(e) for e in u], label=fs.name)
@@ -45,7 +47,8 @@ class FuzzyVariable:
         ax.axhline(0, color='black', lw=1)
         ax.legend(loc='upper right', fontsize='x-large', fancybox=True, framealpha=0.5)
         ax.grid()
-        plt.show()
+        if not axes:
+            plt.show()
     
     def __eq__(self, fsname):
         return Proposition(self, fsname)
