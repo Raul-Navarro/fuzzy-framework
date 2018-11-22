@@ -42,7 +42,7 @@ class FuzzyVariable:
         u = np.sort(np.concatenate([u, supports], axis=0))
         return u
     
-    def show(self, points=config.default_points, axes = None):
+    def show(self, points=config.default_points, axes = None, format_strings='-'):
         u = self.discrete_universe(points)
         members = []
         if not axes:
@@ -51,7 +51,7 @@ class FuzzyVariable:
             ax = axes
         ax.set_title(self.name)
         for fs in self.fuzzysets:
-            ax.plot(u, [fs.eval(e) for e in u], label=fs.name)
+            ax.plot(u, [fs.eval(e) for e in u], format_strings, label=fs.name)
         #if self.firing_strength:
         #    ax.axhline(self.firing_strength, color='black', lw=2)
         ax.axhline(0, color='black', lw=1)

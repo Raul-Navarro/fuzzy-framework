@@ -1,4 +1,5 @@
 README.md
+setup.py
 FuzzySystem/__init__.py
 FuzzySystem/all.py
 FuzzySystem/config.py
@@ -10,3 +11,17 @@ FuzzySystem.egg-info/dependency_links.txt
 FuzzySystem.egg-info/not-zip-safe
 FuzzySystem.egg-info/requires.txt
 FuzzySystem.egg-info/top_level.txt
+FuzzySystem/Defuzzifier/__init__.py
+FuzzySystem/Defuzzifier/defuzzifier.py
+FuzzySystem/FuzzyInferenceSystem/__init__.py
+FuzzySystem/FuzzyInferenceSystem/fis.py
+FuzzySystem/FuzzyInferenceSystem/fuzzyrule.py
+FuzzySystem/FuzzyInferenceSystem/output.py
+FuzzySystem/FuzzySet/__init__.py
+FuzzySystem/FuzzySet/fuzzyset.py
+FuzzySystem/FuzzyVariable/__init__.py
+FuzzySystem/FuzzyVariable/fuzzyvariable.py
+FuzzySystem/MembershipFunction/__init__.py
+FuzzySystem/MembershipFunction/membership_function.py
+FuzzySystem/NonSingleton/__init__.py
+FuzzySystem/NonSingleton/nonsingleton.py

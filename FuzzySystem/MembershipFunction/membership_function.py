@@ -78,10 +78,13 @@ class MembershipFunction:
 class Trimf(MembershipFunction):
     name = 'Triangular mf'
     
+    def __init__(self, params, universe=None, name=None, complement=False):
+        self.a = params[0]
+        self.b = params[1]
+        self.c = params[2]
+        super().__init__(params, universe, name, complement)
+    
     def compute(self, x):
-        self.a = self.params[0]
-        self.b = self.params[1]
-        self.c = self.params[2]
         return max(min((x-self.a)/(self.b-self.a), (self.c-x)/(self.c-self.b)),0)
     
     def area(self):
@@ -97,9 +100,13 @@ class Trimf(MembershipFunction):
 class Gaussmf(MembershipFunction):
     name = 'Gaussian mf'
     
+    def __init__(self, params, universe=None, name=None, complement=False):
+        self.sigma = params[0] 
+        self.c = params[1]
+        super().__init__(params, universe, name, complement)
+        
+    
     def compute(self, x):
-        self.sigma = self.params[0] 
-        self.c = self.params[1]
         return np.exp(-1*(x - self.c)**2/(2.0*self.sigma**2))
     
     def area(self):
@@ -107,6 +114,7 @@ class Gaussmf(MembershipFunction):
 
     def centroid(self):
         return self.c
+    
     @property
     def spread(self):
         return self.sigma
@@ -115,9 +123,13 @@ class Gaussmf(MembershipFunction):
 class Logmf(MembershipFunction):
     name = 'Logistic mf'
     
+    def __init__(self, params, universe=None, name=None, complement=False):
+        self.a = params[0] 
+        self.c = params[1]
+        super().__init__(params, universe, name, complement)
+    
     def compute(self, x):
-        self.a = self.params[0] 
-        self.c = self.params[1]
+        
         #return 1./(1+np.exp(-x))
         return 2./(1+np.exp(((x-self.c)/self.a)**2))
     
@@ -128,9 +140,12 @@ class Logmf(MembershipFunction):
 class Tanhmf(MembershipFunction):
     name = 'Tanh mf'
     
+    def __init__(self, params, universe=None, name=None, complement=False):
+        self.a = params[0] 
+        self.c = params[1]
+        super().__init__(params, universe, name, complement)
+    
     def compute(self, x):
-        self.a = self.params[0] 
-        self.c = self.params[1]
         y = 1+np.tanh(-1*((x-self.c)/self.a)**2)
         return y
     
@@ -142,9 +157,12 @@ class Tanhmf(MembershipFunction):
 class Sigmoidmf(MembershipFunction):
     name = 'Sigmoid mf'
     
+    def __init__(self, params, universe=None, name=None, complement=False):
+        self.a = params[0] 
+        self.c = params[1]
+        super().__init__(params, universe, name, complement)
+    
     def compute(self, x):
-        self.a = self.params[0] 
-        self.c = self.params[1]
         y = 1./(1 + np.exp(-self.a*(x-self.c)))
         return y
     
@@ -156,9 +174,12 @@ class Sigmoidmf(MembershipFunction):
 class Cauchymf(MembershipFunction):
     name = 'Cauchy mf'
     
+    def __init__(self, params, universe=None, name=None, complement=False):
+        self.a = params[0] 
+        self.c = params[1]
+        super().__init__(params, universe, name, complement)
+    
     def compute(self, x):
-        self.a = self.params[0] 
-        self.c = self.params[1]
         y = 1./(1+((x-self.c)/self.a)**2)
         return y
     
@@ -170,11 +191,14 @@ class Cauchymf(MembershipFunction):
 class Trapmf(MembershipFunction):
     name = 'Trapezoidal mf'
     
+    def __init__(self, params, universe=None, name=None, complement=False):
+        self.a = params[0]
+        self.b = params[1]
+        self.c = params[2]
+        self.d = params[3]
+        super().__init__(params, universe, name, complement)
+    
     def compute(self, x):
-        self.a = self.params[0]
-        self.b = self.params[1]
-        self.c = self.params[2]
-        self.d = self.params[3]
         return max(min(divide((x-self.a),float(self.b-self.a)), 1, divide((self.d-x),float(self.d-self.c))), 0)
     
     @property
@@ -190,11 +214,14 @@ class Trapmf(MembershipFunction):
 
 class GBellmf(MembershipFunction):
     name = 'Generalized Bell mf'
+    
+    def __init__(self, params, universe=None, name=None, complement=False):
+        self.a = params[0]
+        self.b = params[1]
+        self.c = params[2]
+        super().__init__(params, universe, name, complement)
 
     def compute(self, x):
-        self.a = self.params[0]
-        self.b = self.params[1]
-        self.c = self.params[2]
         tmp = ((x - self.c)/self.a)**2
         if tmp == 0 and self.b == 0:
             y = 0.5
