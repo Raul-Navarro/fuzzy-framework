@@ -58,7 +58,9 @@ class Centroid(Defuzzifier):
         self.G = {}
         for name, output_array in output_toDict(self.output).items():
             m, u = Aggregator(output_array).getSet(self.samples)
-            self.G[name] = np.dot(m.T, u)/np.sum(m)
+            a = np.dot(m.T, u)
+            b = np.sum(m)
+            self.G[name] = np.divide(a,b, out=np.zeros_like(a), where=b!=0)
         return self.G
 
 class Heights(Defuzzifier):
@@ -76,7 +78,9 @@ class Heights(Defuzzifier):
                 y = np.mean(self.universe[t==np.max(t)])
                 y_h = np.append(y_h,y)
                 m_b = np.append(m_b, g.eval(y))
-            self.G[name] = np.dot(y_h.T, m_b)/np.sum(m_b)
+            a = np.dot(y_h.T, m_b)
+            b = np.sum(m_b)
+            self.G[name] = np.divide(a,b, out=np.zeros_like(a), where=b!=0)
         return self.G
     
 class CenterOfSets(Defuzzifier):
@@ -91,7 +95,11 @@ class CenterOfSets(Defuzzifier):
                 c = Centroid([[(name,g)]], samples=self.samples).eval()
                 y_cos = np.append(y_cos, list(c.values())[0])
                 fs = np.append(fs, g.firing_strength)
-            self.G[name] =  np.dot(y_cos.T, fs)/np.sum(fs)
+            a = np.dot(y_cos.T, fs)
+            b = np.sum(fs)
+            self.G[name] =  np.divide(a,b, out=np.zeros_like(a), where=b!=0)
+            
+           
         return self.G
     
 class MeanOfMaximum(Defuzzifier):
@@ -120,7 +128,10 @@ class ModifiedHeights(Defuzzifier):
                 y = np.mean(self.universe[t==np.max(t)])
                 y_h = np.append(y_h,y)
                 m_b = np.append(m_b, np.divide(g.eval(y),g.mf.spread**2))
-            self.G[name] = np.dot(y_h.T, m_b)/np.sum(m_b)
+            a = np.dot(y_h.T, m_b)
+            b = np.sum(m_b)
+            self.G[name] = np.divide(a,b, out=np.zeros_like(a), where=b!=0)
+            
         return self.G
     
 class LastOfMaximum(Defuzzifier):

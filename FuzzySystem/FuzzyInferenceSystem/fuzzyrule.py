@@ -351,6 +351,9 @@ class FuzzyRule():
             firing_strength = firing_strength * self.weight
         
         if isinstance(self.consequent, (Consequent,)):
+            if isinstance(firing_strength, (list)):
+                #NEW
+                firing_strength = self.and_op(firing_strength)
             return self.consequent.eval(firing_strength)
         elif isinstance(self.consequent, (TSKConsequent)):
             if isinstance(x, (tuple,)):
