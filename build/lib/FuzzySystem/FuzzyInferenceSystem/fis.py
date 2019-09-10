@@ -1,7 +1,8 @@
 from .. import config
 import numpy as np
 import matplotlib.pyplot as plt
-import logging
+import itertools
+import logging, sys
 from .output import Output
 from .fuzzyrule import TSKConsequent, Agregation, FuzzyRule, Antecedent, Consequent
 from ..FuzzyVariable import fuzzyvariable

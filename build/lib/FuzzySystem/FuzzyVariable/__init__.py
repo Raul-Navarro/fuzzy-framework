@@ -1,0 +1,1 @@
+from .fuzzyvariable import FuzzyVariable

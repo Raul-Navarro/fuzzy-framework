@@ -3,6 +3,7 @@ from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
 from ..FuzzyVariable import fuzzyvariable as fv
 #from ..FuzzyVariable.fuzzyvariable import FuzzyVariable
 import numpy as np
+import itertools
 
 
 class Conector:
@@ -252,14 +253,9 @@ class Consequent:
 
             
         if isinstance(x, (list,np.ndarray,)):
-            print("Debug: input array: ")
-            results = []
-            for xi in x:
-                result = []
-                for prop in self.propositions:
-                    result.append((prop.fuzzyvar.name, prop.getfuzzyset().cut(xi)))
-                results.append(result)
-            return results
+            for prop in self.propositions:
+                result.append((prop.fuzzyvar.name, prop.getfuzzyset().cut(x[0])))
+            return result
 
         
     def __str__(self):
@@ -356,13 +352,8 @@ class FuzzyRule():
         
         if isinstance(self.consequent, (Consequent,)):
             if isinstance(firing_strength, (list)):
-                if len(firing_strength)>1:
-                    pass
-                    #firing_strength = self.and_op(firing_strength)
-                else:
-                    firing_strength = firing_strength[0]
-            else:
-                print("Debug: fs",firing_strength)
+                #NEW
+                firing_strength = self.and_op(firing_strength)
             return self.consequent.eval(firing_strength)
         elif isinstance(self.consequent, (TSKConsequent)):
             if isinstance(x, (tuple,)):

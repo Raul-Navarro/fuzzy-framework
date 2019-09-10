@@ -8,21 +8,15 @@ import logging, sys
 class Output:
     def __init__(self, fuzzy_output, universe=None, type='Mamdani'):
         self.type = type
-        self.multiple_outputs = False
+
         if self.type == 'Sugeno':
             self._outputs, self.firing_strength = zip(*fuzzy_output)
             self.firing_strength = np.squeeze(np.array(self.firing_strength))
             self._outputs = np.array(self._outputs)
-        elif self.type == 'Mamdani':
-            self._outputs = fuzzy_output
-            if not np.array(self._outputs).ndim == 3:
-                self.multiple_outputs = True
         else:
-            print("Unknown Fuzzy Type System")
+            self._outputs = fuzzy_output
     
-    def get_array(self, nout = 0):
-        if self.multiple_outputs:
-            return [output[nout] for output in np.array(self._outputs)]
+    def get_array(self):
         return self._outputs
         
     @staticmethod
@@ -37,26 +31,20 @@ class Output:
         return G
 
 
-    def get_outputs(self, nout = 0):
+    def get_outputs(self):
         if self.type == 'Mamdani':
-            if self.multiple_outputs:
-                temp = [output[nout] for output in np.array(self._outputs)]
-                return Output.output_toDict(temp).keys()
             return Output.output_toDict(self._outputs).keys()
         elif self.type == 'Sugeno':
             return self.get_array()
     
 
-    def show(self, defuzzifier=None, points=config.default_points, axes = None, label = True, nout = 0):
+    def show(self, defuzzifier=None, points=config.default_points, axes = None, label = True):
         if self.type=='Sugeno':
             return None
             
         u = None
         i = 1
-        selected_output = self._outputs
-        if self.multiple_outputs:
-            selected_output = [output[nout] for output in np.array(self._outputs)]
-        consequents = Output.output_toDict(selected_output)
+        consequents = Output.output_toDict(self._outputs)
         for key in self.get_outputs():
             universe = consequents[key][0].universe
             #plt.subplot()#len(self.get_outputs()), 1, i)
