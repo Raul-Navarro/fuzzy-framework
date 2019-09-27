@@ -6,7 +6,7 @@ from .output import Output
 from .fuzzyrule import TSKConsequent, Agregation, FuzzyRule, Antecedent, Consequent
 from ..FuzzyVariable import fuzzyvariable
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
-
+import pandas as pd
 
 class FuzzyInferenceSystem:
     def __init__(self, rules, points=config.default_points, defuzzifier=None,
@@ -76,6 +76,10 @@ class FuzzyInferenceSystem:
         if isinstance(inputs, (tuple,)):
             for t in inputs:
                 print(t)
+        elif isinstance(inputs, (pd.DataFrame,)):     
+            inputs = inputs.to_dict(orient='list')
+            for k in inputs.keys():
+                print('{}: {}'.format(k, inputs[k]))
         elif isinstance(inputs, (dict,)):     
             for k in inputs.keys():
                 print('{}: {}'.format(k, inputs[k]))

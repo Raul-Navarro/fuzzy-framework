@@ -11,5 +11,6 @@ setup(name='FuzzySystem',
       install_requires=[
           'numpy',
           'matplotlib',
+          'pandas',
       ],
       zip_safe=False) 
