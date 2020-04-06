@@ -1,1 +1,1 @@
-default_points = 100 
+default_points = 350

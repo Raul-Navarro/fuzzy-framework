@@ -213,7 +213,13 @@ class Antecedent:
     def __str__(self):
         if isinstance(self.propositions, (list,)):
             #return ' and '.join(["{} is {}".format(var.name, value) for var, value in self.propositions])
-            return ' and '.join(["{}".format(str(prop)) for prop in self.propositions])
+            str_conector = " "
+            if self.conector is not None:
+                if self.conector==min:
+                    str_conector = " and "
+                else:
+                    str_conector = " or "
+            return str_conector.join(["{}".format(str(prop)) for prop in self.propositions])
         if isinstance(self.propositions, (Agregation,)):
            return str(self.propositions)
         return 'EMPTY'
@@ -341,8 +347,12 @@ class FuzzyRule():
     def eval(self, x, and_op=minimum, or_op=maximum):
         self.and_op = and_op
         self.or_op = or_op
+        if isinstance(x, (np.ndarray,)):
+            firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
+
         if isinstance(x, (tuple,)):
             firing_strength = self.antecedent.eval(dict(x), self.and_op, self.or_op)
+            
         else:
             firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
         

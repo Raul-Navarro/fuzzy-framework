@@ -1,13 +1,12 @@
 from .. import config
 import numpy as np
 import matplotlib.pyplot as plt
-import itertools
-import logging, sys
+import logging
 from .output import Output
 from .fuzzyrule import TSKConsequent, Agregation, FuzzyRule, Antecedent, Consequent
 from ..FuzzyVariable import fuzzyvariable
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
-
+import pandas as pd
 
 class FuzzyInferenceSystem:
     def __init__(self, rules, points=config.default_points, defuzzifier=None,
@@ -20,7 +19,7 @@ class FuzzyInferenceSystem:
         self.all_outputs = outputs
         self.rules = rules
         
-        if rules:
+        if rules is not None:
             for r in rules:
                 if isinstance(r.consequent, (TSKConsequent,)):
                     if self.type == 'Mamdani':
@@ -72,14 +71,27 @@ class FuzzyInferenceSystem:
         for r in self.rules:
             print(str(r))
         
-    def eval(self, inputs):
+    def eval(self, inputs, data_columns=None):
         print('\nEvaluation of FIS with inputs:')
+        if isinstance(inputs, (np.ndarray,)):
+            if data_columns is not None:
+                inputs = dict(zip(data_columns, inputs.T))
+            else:
+                inputs = dict(zip(list(self.inputs.keys()), inputs.T))
+                
         if isinstance(inputs, (tuple,)):
             for t in inputs:
                 print(t)
+
+        elif isinstance(inputs, (pd.DataFrame,)):     
+            inputs = inputs.to_dict(orient='list')
+            for k in inputs.keys():
+                print('{}: {}'.format(k, inputs[k]))
+
         elif isinstance(inputs, (dict,)):     
             for k in inputs.keys():
                 print('{}: {}'.format(k, inputs[k]))
+
         return Output([rule.eval(inputs, and_op=self.and_op, or_op=self.or_op) for rule in self.rules], type=self.type)
     
     @property
@@ -97,7 +109,9 @@ class FuzzyInferenceSystem:
     def outputs(self):
         output = {}
         if self.all_outputs:
-            if isinstance(self.all_outputs[0], (fuzzyvariable.FuzzyVariable,)):
+            if isinstance(self.all_outputs, (fuzzyvariable.FuzzyVariable,)):
+                output[self.all_outputs.name] = self.all_outputs
+            elif isinstance(self.all_outputs[0], (fuzzyvariable.FuzzyVariable,)):
                 for fvar in self.all_outputs:
                     output[fvar.name] =  fvar
             elif isinstance(self.all_outputs[0], (str,)):
@@ -109,6 +123,7 @@ class FuzzyInferenceSystem:
                 for rule in self.rules:
                     output.update(rule.outputs)
         return output
+
 
     @property
     def matrix_rules(self):
@@ -138,7 +153,7 @@ class FuzzyInferenceSystem:
         outputs_classes_id = {}
         for i,k in enumerate(self.outputs.keys()):
             fsets_names = [f.name for f in self.outputs[k].fuzzysets]
-            outputs_classes_id[i]=dict(zip(fsets_names,range(0, len(fsets_names))))
+            outputs_classes_id[i]=dict(zip(fsets_names,range(1, len(fsets_names)+1)))
 
         fuzzysets_id = {}
         for i,k in enumerate(self.inputs.keys()):
@@ -178,10 +193,18 @@ class FuzzyInferenceSystem:
             structure[k] = structure[k] + [[name_dict[f.mf.name],
                                 [f.name, f.mf.params,f.universe]] for f in self.inputs[k].fuzzysets]
         output_list = []
+        output_structure = {}
         outputs = self.outputs
         if isinstance(outputs, (dict,)):
             for k in outputs.keys():
-                output_list = output_list + [f.name for f in self.outputs[k].fuzzysets]
+                output_structure[k] = []
+                output_structure[k] = output_structure[k] + [[name_dict[f.mf.name],
+                                [f.name, f.mf.params,f.universe]] for f in self.outputs[k].fuzzysets]
+            return {"inputs":structure, "outputs":output_structure}
+
         if isinstance(outputs, (list,)):
             output_list = outputs
+        elif isinstance(outputs, (fuzzyvariable.FuzzyVariable,)):
+            output_list = output_list + [[name_dict[f.mf.name],[f.name, f.mf.params,f.universe]] for f in outputs.fuzzysets]
+
         return {"inputs":structure, "outputs":output_list}

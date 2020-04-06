@@ -51,16 +51,16 @@ class MembershipFunction:
     def spread(self):
         pass
     
-    def show(self, points=config.default_points, axes=None):
+    def show(self, points=config.default_points, axes=None, fmt='-', kwargs={}):
         u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
-        u = np.sort(np.concatenate([u, self.params], axis=0))
-        u = np.unique(u)
+        #u = np.sort(np.concatenate([u, self.params], axis=0))
+        #u = np.unique(u)
         c = [self.eval(e) for e in u]
         if not axes:
             fig, ax = plt.subplots()
         else:
             ax = axes
-        ax.plot(u, c, '-', label=self.name)
+        ax.plot(u, c, fmt, label=self.name, **kwargs)
         ax.legend(loc='best', fontsize='x-large', fancybox=True, framealpha=0.5)
         #legend.get_frame().set_facecolor('#FFFFFF')
         ax.grid()
@@ -199,8 +199,11 @@ class Trapmf(MembershipFunction):
         super().__init__(params, universe, name, complement)
     
     def compute(self, x):
-        return max(min(divide((x-self.a),float(self.b-self.a)), 1, divide((self.d-x),float(self.d-self.c))), 0)
-    
+        if isinstance(x, (list,np.ndarray,)):
+            return np.array([max(min(divide((xi-self.a),float(self.b-self.a)), 1, divide((self.d-xi),float(self.d-self.c))), 0) for xi in x])
+        else:
+            return max(min(divide((x-self.a),float(self.b-self.a)), 1, divide((self.d-x),float(self.d-self.c))), 0)
+
     @property
     def spread(self):
         return self.d-self.a

@@ -11,9 +11,9 @@ output_toDict = Output.output_toDict
 
 class Defuzzifier:
     name = "Defuzzifier"
-    def __init__(self, output, universe=None, samples = 100):
+    def __init__(self, output, universe=None, samples = 100, nout = 0):
         if isinstance(output, (Output,)):
-            self.output = output.get_array()
+            self.output = output.get_array(nout)
         elif isinstance(output, (list,)):
             self.output = output
         else:

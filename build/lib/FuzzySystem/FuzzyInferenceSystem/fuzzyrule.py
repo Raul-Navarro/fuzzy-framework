@@ -3,7 +3,6 @@ from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
 from ..FuzzyVariable import fuzzyvariable as fv
 #from ..FuzzyVariable.fuzzyvariable import FuzzyVariable
 import numpy as np
-import itertools
 
 
 class Conector:
@@ -214,7 +213,13 @@ class Antecedent:
     def __str__(self):
         if isinstance(self.propositions, (list,)):
             #return ' and '.join(["{} is {}".format(var.name, value) for var, value in self.propositions])
-            return ' and '.join(["{}".format(str(prop)) for prop in self.propositions])
+            str_conector = " "
+            if self.conector is not None:
+                if self.conector==min:
+                    str_conector = " and "
+                else:
+                    str_conector = " or "
+            return str_conector.join(["{}".format(str(prop)) for prop in self.propositions])
         if isinstance(self.propositions, (Agregation,)):
            return str(self.propositions)
         return 'EMPTY'
@@ -253,9 +258,14 @@ class Consequent:
 
             
         if isinstance(x, (list,np.ndarray,)):
-            for prop in self.propositions:
-                result.append((prop.fuzzyvar.name, prop.getfuzzyset().cut(x[0])))
-            return result
+            print("Debug: input array: ")
+            results = []
+            for xi in x:
+                result = []
+                for prop in self.propositions:
+                    result.append((prop.fuzzyvar.name, prop.getfuzzyset().cut(xi)))
+                results.append(result)
+            return results
 
         
     def __str__(self):
@@ -337,8 +347,12 @@ class FuzzyRule():
     def eval(self, x, and_op=minimum, or_op=maximum):
         self.and_op = and_op
         self.or_op = or_op
+        if isinstance(x, (np.ndarray,)):
+            firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
+
         if isinstance(x, (tuple,)):
             firing_strength = self.antecedent.eval(dict(x), self.and_op, self.or_op)
+            
         else:
             firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
         
@@ -352,8 +366,13 @@ class FuzzyRule():
         
         if isinstance(self.consequent, (Consequent,)):
             if isinstance(firing_strength, (list)):
-                #NEW
-                firing_strength = self.and_op(firing_strength)
+                if len(firing_strength)>1:
+                    pass
+                    #firing_strength = self.and_op(firing_strength)
+                else:
+                    firing_strength = firing_strength[0]
+            else:
+                print("Debug: fs",firing_strength)
             return self.consequent.eval(firing_strength)
         elif isinstance(self.consequent, (TSKConsequent)):
             if isinstance(x, (tuple,)):
