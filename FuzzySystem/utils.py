@@ -10,7 +10,8 @@ def format_inputs(x, inputs=None, data_columns=None, verbose=False):
         else:
             if input is not None:
                 x = dict(zip(list(inputs.keys()), x.T))
-            raise Exception('Inputs dictionary or list must be provided')
+            else:
+                raise Exception('Inputs dictionary or list must be provided')
 
     elif isinstance(x, (pd.DataFrame, )):
         x = x.to_dict(orient='list')

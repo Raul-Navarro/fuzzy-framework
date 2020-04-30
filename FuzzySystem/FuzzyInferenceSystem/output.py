@@ -103,7 +103,7 @@ class Output:
                             retstep=False,
                             dtype=None)
             for G in consequents[key]:
-                ax.fill_between(u, G.eval(u), -0.00001,
+                ax.fill_between(u, G.eval(u), 0,
                                 alpha=0.60)  #label=G.name, alpha=0.85)
             if defuzzifier is not None:
                 if isinstance(defuzzifier, (list, )):
