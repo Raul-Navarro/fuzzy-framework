@@ -51,6 +51,9 @@ class MembershipFunction:
     def spread(self):
         pass
     
+    def set_params(self, params):
+        pass
+    
     def show(self, points=config.default_points, axes=None, fmt='-', kwargs={}):
         u = np.linspace(self.universe[0], self.universe[1], num=points, endpoint=True, retstep=False, dtype=None)
         #u = np.sort(np.concatenate([u, self.params], axis=0))
@@ -77,11 +80,9 @@ class MembershipFunction:
 
 class Trimf(MembershipFunction):
     name = 'Triangular mf'
-    
+
     def __init__(self, params, universe=None, name=None, complement=False):
-        self.a = params[0]
-        self.b = params[1]
-        self.c = params[2]
+        self.set_params(params)
         super().__init__(params, universe, name, complement)
     
     def compute(self, x):
@@ -96,13 +97,17 @@ class Trimf(MembershipFunction):
     @property
     def spread(self):
         return self.c - self.a
+    
+    def set_params(self, params):
+        self.a = params[0]
+        self.b = params[1]
+        self.c = params[2]
 
 class Gaussmf(MembershipFunction):
     name = 'Gaussian mf'
     
     def __init__(self, params, universe=None, name=None, complement=False):
-        self.sigma = params[0] 
-        self.c = params[1]
+        self.set_params(params)
         super().__init__(params, universe, name, complement)
         
     
@@ -118,31 +123,38 @@ class Gaussmf(MembershipFunction):
     @property
     def spread(self):
         return self.sigma
+    
+    def set_params(self, params):
+        self.sigma = params[0] 
+        self.c = params[1]
+
 
 
 class Logmf(MembershipFunction):
     name = 'Logistic mf'
     
     def __init__(self, params, universe=None, name=None, complement=False):
-        self.a = params[0] 
-        self.c = params[1]
+        self.set_params(params)
         super().__init__(params, universe, name, complement)
     
     def compute(self, x):
-        
         #return 1./(1+np.exp(-x))
         return 2./(1+np.exp(((x-self.c)/self.a)**2))
     
     @property
     def spread(self):
         return self.a
+    
+    def set_params(self, params):
+        self.a = params[0] 
+        self.c = params[1]
+    
 
 class Tanhmf(MembershipFunction):
     name = 'Tanh mf'
     
     def __init__(self, params, universe=None, name=None, complement=False):
-        self.a = params[0] 
-        self.c = params[1]
+        self.set_params(params)
         super().__init__(params, universe, name, complement)
     
     def compute(self, x):
@@ -152,14 +164,17 @@ class Tanhmf(MembershipFunction):
     @property
     def spread(self):
         return self.a
+    
+    def set_params(self, params):
+        self.a = params[0] 
+        self.c = params[1]
 
 
 class Sigmoidmf(MembershipFunction):
     name = 'Sigmoid mf'
     
     def __init__(self, params, universe=None, name=None, complement=False):
-        self.a = params[0] 
-        self.c = params[1]
+        self.set_params(params)
         super().__init__(params, universe, name, complement)
     
     def compute(self, x):
@@ -169,14 +184,17 @@ class Sigmoidmf(MembershipFunction):
     @property
     def spread(self):
         return self.a
+    
+    def set_params(self, params):
+        self.a = params[0] 
+        self.c = params[1]
 
 
 class Cauchymf(MembershipFunction):
     name = 'Cauchy mf'
     
     def __init__(self, params, universe=None, name=None, complement=False):
-        self.a = params[0] 
-        self.c = params[1]
+        self.set_params(params)
         super().__init__(params, universe, name, complement)
     
     def compute(self, x):
@@ -186,16 +204,16 @@ class Cauchymf(MembershipFunction):
     @property
     def spread(self):
         return self.a
-
+    
+    def set_params(self, params):
+        self.a = params[0] 
+        self.c = params[1]
 
 class Trapmf(MembershipFunction):
     name = 'Trapezoidal mf'
     
     def __init__(self, params, universe=None, name=None, complement=False):
-        self.a = params[0]
-        self.b = params[1]
-        self.c = params[2]
-        self.d = params[3]
+        self.set_params(params)
         super().__init__(params, universe, name, complement)
     
     def compute(self, x):
@@ -213,15 +231,19 @@ class Trapmf(MembershipFunction):
     
     def centroid(self):
         return (self.d**2+self.c*self.d+self.c**2-self.a**2-self.a*self.b-self.b**2)/(3*((self.d-self.a+self.c-self.b)))
+    
+    def set_params(self, params):
+        self.a = params[0]
+        self.b = params[1]
+        self.c = params[2]
+        self.d = params[3]
 
 
 class GBellmf(MembershipFunction):
     name = 'Generalized Bell mf'
     
     def __init__(self, params, universe=None, name=None, complement=False):
-        self.a = params[0]
-        self.b = params[1]
-        self.c = params[2]
+        self.set_params(params)
         super().__init__(params, universe, name, complement)
 
     def compute(self, x):
@@ -238,3 +260,8 @@ class GBellmf(MembershipFunction):
     @property
     def spread(self):
         return self.a
+    
+    def set_params(self, params):
+        self.a = params[0]
+        self.b = params[1]
+        self.c = params[2]

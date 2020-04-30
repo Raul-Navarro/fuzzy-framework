@@ -5,6 +5,7 @@ FuzzySystem/all.py
 FuzzySystem/config.py
 FuzzySystem/fuzzy_operations.py
 FuzzySystem/matlab_importer.py
+FuzzySystem/utils.py
 FuzzySystem.egg-info/PKG-INFO
 FuzzySystem.egg-info/SOURCES.txt
 FuzzySystem.egg-info/dependency_links.txt

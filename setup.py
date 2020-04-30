@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='FuzzySystem',
-      version='0.241',
+      version='0.242',
       description='FIS Framework',
       url='',
       author='Raul Navarro-Almanza',

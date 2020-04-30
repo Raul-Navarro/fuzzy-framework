@@ -1,10 +1,9 @@
-from .MembershipFunction import  Trapmf, Trimf, Gaussmf, GBellmf, Sigmoidmf
+from .MembershipFunction import Trapmf, Trimf, Gaussmf, GBellmf, Sigmoidmf
 from .FuzzyVariable.fuzzyvariable import FuzzyVariable
 from .FuzzySet.fuzzyset import FuzzySet
 from .FuzzyInferenceSystem.fis import FuzzyInferenceSystem
-from .FuzzyInferenceSystem.fuzzyrule import FuzzyRule, Antecedent, Consequent 
+from .FuzzyInferenceSystem.fuzzyrule import FuzzyRule, Antecedent, Consequent
 import numpy as np
- 
 """
 Membership functions in matlab: 
 dsigmf, evalmf, gauss2mf, gaussmf,
@@ -12,12 +11,18 @@ gbellmf, mf2mf, pimf, psigmf,
 sigmf, smf, trapmf, trapmf, trimf, zmf
 """
 
-MF_DICTIONARY = {'trapmf': Trapmf, 'trimf':Trimf, 'gaussmf':Gaussmf,
-                'gbellmf':GBellmf, 'sigmf': Sigmoidmf}
+MF_DICTIONARY = {
+    'trapmf': Trapmf,
+    'trimf': Trimf,
+    'gaussmf': Gaussmf,
+    'gbellmf': GBellmf,
+    'sigmf': Sigmoidmf
+}
 
 
 def strip_array(array):
-    return [text.strip() for text in array if text.strip()!='']
+    return [text.strip() for text in array if text.strip() != '']
+
 
 def read_rules_matlab(file=None, txt=None):
     rules_array = []
@@ -28,7 +33,7 @@ def read_rules_matlab(file=None, txt=None):
                 ant, con = rules.split(',')
                 ants = strip_array(ant.split(' '))
                 cons = strip_array(con.split(' '))
-                weights = cons[-1].strip().replace('(','').replace(')','')
+                weights = cons[-1].strip().replace('(', '').replace(')', '')
                 cons = cons[:-1]
                 conection = conection.strip()
                 rules_array.append((ants, cons, weights, conection))
@@ -38,90 +43,92 @@ def read_rules_matlab(file=None, txt=None):
             ant, con = rules.split(',')
             ants = strip_array(ant.split(' '))
             cons = strip_array(con.split(' '))
-            weights = cons[-1].strip().replace('(','').replace(')','')
+            weights = cons[-1].strip().replace('(', '').replace(')', '')
             cons = cons[:-1]
             conection = conection.strip()
             rules_array.append((ants, cons, weights, conection))
     else:
         return None
-    return rules_array    
-    
+    return rules_array
+
 
 def import_rules_matlab(rules, fis_inputs, fis_outputs):
     antecedent = []
     consequent = []
     for i, rule in enumerate(rules):
-        antecedent.append(Antecedent(conector=min))        
+        antecedent.append(Antecedent(conector=min))
         consequent.append(Consequent(conector=min))
 
-        for j,a in enumerate(rule[0]):
-            antecedent[i].add(fis_inputs[j][int(a)-1])
-        for j,c in enumerate(rule[1]):
-            consequent[i].add(fis_outputs[j][int(c)-1])
-    
+        for j, a in enumerate(rule[0]):
+            antecedent[i].add(fis_inputs[j][int(a) - 1])
+        for j, c in enumerate(rule[1]):
+            consequent[i].add(fis_outputs[j][int(c) - 1])
+
         fis_rules = []
         for i in range(len(antecedent)):
-            fis_rules.append(FuzzyRule(antecedent=antecedent[i], consequent=consequent[i]))  
+            fis_rules.append(
+                FuzzyRule(antecedent=antecedent[i], consequent=consequent[i]))
     return fis_rules
-
 
 
 def read_fis_file(file):
     fis_config = {}
     i = 1
-    sections = ['[System]','[Input{}]', '[Output{}]', '[Rules]']
+    sections = ['[System]', '[Input{}]', '[Output{}]', '[Rules]']
     with open(file, 'r') as f:
         line = f.readline()
-        if line.strip()==sections[0]:
+        if line.strip() == sections[0]:
             fis_config['system'] = {}
             text = f.readline()
             while text.strip() != '':
                 key, value = text.split("=")
                 fis_config['system'][key] = value.strip().replace("'", '')
-                text = f.readline()        
-        fis_config['system']['NumInputs'] = int(fis_config['system']['NumInputs'])
+                text = f.readline()
+        fis_config['system']['NumInputs'] = int(
+            fis_config['system']['NumInputs'])
         inputs = fis_config['system']['NumInputs']
-        fis_config['system']['NumOutputs'] = int(fis_config['system']['NumOutputs'])
+        fis_config['system']['NumOutputs'] = int(
+            fis_config['system']['NumOutputs'])
         outputs = int(fis_config['system']['NumOutputs'])
         fis_config['inputs'] = []
-        while i<=inputs:
+        while i <= inputs:
             text = f.readline()
             while text.strip() != '':
                 if text.strip() == sections[1].format(i):
                     temp = {}
                 else:
                     key, value = text.strip().split('=')
-                    if key=='Range':
-                        value = value.replace('[','').replace(']','')
+                    if key == 'Range':
+                        value = value.replace('[', '').replace(']', '')
                         #value = list(map(int,value.split(' ')))
-                        value = list(map(float,value.split(' ')))
+                        value = list(map(float, value.split(' ')))
                         temp[key] = value
                     elif key == 'NumMFs':
                         temp[key] = int(value)
                     else:
                         temp[key] = value.strip().replace("'", '')
                 text = f.readline()
-            i = i+1
+            i = i + 1
             fis_config['inputs'].append(temp)
         i = 1
         fis_config['outputs'] = []
-        while i<=outputs:
+        while i <= outputs:
             text = f.readline()
             while text.strip() != '':
                 if text.strip() == sections[2].format(i):
                     temp = {}
                 else:
                     key, value = text.strip().split('=')
-                    if key=='Range':
-                        value = value.replace('[','').replace(']','')
-                        value = list(map(int,value.split(' ')))
+                    if key == 'Range':
+                        value = value.replace('[', '').replace(']', '')
+                        value = list(map(int, value.split(' ')))
                         temp[key] = value
                     elif key == 'NumMFs':
                         temp[key] = int(value)
                     else:
                         temp[key] = value.strip().replace("'", '')
                 text = f.readline()
-            i = i+1
+            i = i + 1
             fis_config['outputs'].append(temp)
         text = f.readline()
         if text.strip() == sections[3]:
@@ -131,56 +138,61 @@ def read_fis_file(file):
 
 
 def parse_fis_file(conf):
-    for inp in range(0,int(conf['system']['NumInputs'])):
-        var_name = conf['inputs'][inp]['Name']
-        interval = conf['inputs'][inp]['Range']
+    for inp in range(0, int(conf['system']['NumInputs'])):
+        # var_name = conf['inputs'][inp]['Name']
+        # interval = conf['inputs'][inp]['Range']
         num_mf = int(conf['inputs'][inp]['NumMFs'])
         fuzzy_sets = []
-        for i in range(1, num_mf+1):
-            name_mf, params = conf['inputs'][inp]['MF'+str(i)].split(',')
+        for i in range(1, num_mf + 1):
+            name_mf, params = conf['inputs'][inp]['MF' + str(i)].split(',')
             name, mf = name_mf.split(':')
-            params = params.replace('[', '').replace(']','')
-            params = list(map(float,params.split(' ') ))
+            params = params.replace('[', '').replace(']', '')
+            params = list(map(float, params.split(' ')))
             fuzzy_sets.append((name, mf, params))
-            del conf['inputs'][inp]['MF'+str(i)]
-        conf['inputs'][inp]['values'] = fuzzy_sets 
+            del conf['inputs'][inp]['MF' + str(i)]
+        conf['inputs'][inp]['values'] = fuzzy_sets
 
-    for inp in range(0,int(conf['system']['NumOutputs'])):
-        var_name = conf['outputs'][inp]['Name']
-        interval = conf['outputs'][inp]['Range']
+    for inp in range(0, int(conf['system']['NumOutputs'])):
+        #var_name = conf['outputs'][inp]['Name']
+        #interval = conf['outputs'][inp]['Range']
         num_mf = int(conf['outputs'][inp]['NumMFs'])
         fuzzy_sets = []
-        for i in range(1, num_mf+1):
-            name_mf, params = conf['outputs'][inp]['MF'+str(i)].split(',')
+        for i in range(1, num_mf + 1):
+            name_mf, params = conf['outputs'][inp]['MF' + str(i)].split(',')
             name, mf = name_mf.split(':')
-            params = params.replace('[', '').replace(']','')
-            params = list(map(float,params.split(' ') ))
+            params = params.replace('[', '').replace(']', '')
+            params = list(map(float, params.split(' ')))
             fuzzy_sets.append((name, mf, params))
-            del conf['outputs'][inp]['MF'+str(i)]
-        conf['outputs'][inp]['values'] = fuzzy_sets 
+            del conf['outputs'][inp]['MF' + str(i)]
+        conf['outputs'][inp]['values'] = fuzzy_sets
     return conf
+
 
 def get_io_fis(conf):
     fis_input = []
     for input in conf['inputs']:
         fuzzy_sets = []
         for fs in input['values']:
-            fuzzy_sets.append(FuzzySet(fs[0],MF_DICTIONARY[fs[1]](fs[2])))
-        fis_input.append(FuzzyVariable(input['Name'],fuzzy_sets, universe = input['Range']))
+            fuzzy_sets.append(FuzzySet(fs[0], MF_DICTIONARY[fs[1]](fs[2])))
+        fis_input.append(
+            FuzzyVariable(input['Name'], fuzzy_sets, universe=input['Range']))
 
     fis_output = []
     for output in conf['outputs']:
         fuzzy_sets = []
         for fs in output['values']:
-            fuzzy_sets.append(FuzzySet(fs[0],MF_DICTIONARY[fs[1]](fs[2])))
-        fis_output.append(FuzzyVariable(output['Name'],fuzzy_sets, universe = output['Range']))
+            fuzzy_sets.append(FuzzySet(fs[0], MF_DICTIONARY[fs[1]](fs[2])))
+        fis_output.append(
+            FuzzyVariable(output['Name'], fuzzy_sets,
+                          universe=output['Range']))
     return (fis_input, fis_output)
+
 
 def import_fis_matlab(file):
     conf = read_fis_file(file)
     conf = parse_fis_file(conf)
-    fis_input, fis_output = get_io_fis(conf) 
+    fis_input, fis_output = get_io_fis(conf)
     rules = read_rules_matlab(txt=conf['rules'])
     fis_rules = import_rules_matlab(rules, fis_input, fis_output)
     fis = FuzzyInferenceSystem(fis_rules, inputs=fis_input, outputs=fis_output)
-    return fis 
+    return fis
