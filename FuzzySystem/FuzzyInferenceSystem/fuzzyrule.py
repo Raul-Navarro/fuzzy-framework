@@ -331,9 +331,23 @@ class TSKConsequent():
         return self.params
 
     def eval(self, x, firing_strength, and_op=algebraic_prod):
-        if and_op == None:
-            return self.function(*x, *self.params)
-        return and_op(self.function(*x, *self.params), firing_strength)
+        x = np.array(list(x), dtype=np.float)
+        x = x.squeeze()
+        if x.ndim > 1:
+            #multiple instances
+            # dim: Instaces X Inputs
+            x = x.T
+            if and_op is None:
+                return [self.function(*x_i, *self.params) for x_i in x]
+            return [
+                and_op(self.function(*x_i, *self.params), firing_strength)
+                for x_i in x
+            ]
+
+        else:
+            if and_op is None:
+                return self.function(*x, *self.params)
+            return and_op(self.function(*x, *self.params), firing_strength)
 
     def __str__(self):
         return self.function.__name__
@@ -389,10 +403,10 @@ class FuzzyRule():
             if isinstance(firing_strength, (list, np.ndarray)):
                 firing_strength = np.array(firing_strength)
                 np.set_printoptions(precision=2)
-                print(' {} = {} with weight = {:.2f}'.format(
+                print(' {}, fs = {} with weight = {:.2f}'.format(
                     str(self), firing_strength, self.weight))
             else:
-                print(' {} = {:.2f} with weight = {:.2f}'.format(
+                print(' {}, fs = {:.2f} with weight = {:.2f}'.format(
                     str(self), firing_strength, self.weight))
 
         if isinstance(firing_strength, (

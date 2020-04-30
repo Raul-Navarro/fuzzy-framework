@@ -52,7 +52,7 @@ class TSKDefuzzifier:
         if isinstance(output, (Output, )):
             if output.type == 'Sugeno':
                 self.g = output.get_array()
-                self.f = output.firing_strength
+                self.fs = output.firing_strength
             else:
                 raise Exception("Output must be result of TSK Consequents")
         else:
@@ -63,7 +63,11 @@ class TSKDefuzzifier:
         return self.compute()
 
     def compute(self):
-        return np.sum(self.f * self.g) / np.sum(self.f)
+        self.g = np.array(self.g)
+        self.fs = np.array(self.fs)
+        fs_ = self.fs / self.fs.sum(axis=0)
+        return np.sum(self.g * fs_, axis=0)
+        #return np.sum(self.fs * self.g) / np.sum(self.fs)
 
 
 class Aggregator():

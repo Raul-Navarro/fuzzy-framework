@@ -46,6 +46,8 @@ class Output:
 
     @property
     def fuzzysets(self):
+        if self.type == 'Sugeno':
+            return self.get_array()
         if self.multiple_outputs:
             result = []
             for i in range(self._outputs.shape[1]):
