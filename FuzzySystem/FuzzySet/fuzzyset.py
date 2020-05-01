@@ -92,7 +92,7 @@ class FuzzySet:
         #u = np.unique(u)
         c = self.eval(u)
         if not axes:
-            fig, ax = plt.subplots()
+            _, ax = plt.subplots()
         else:
             ax = axes
         plt.title('Fuzzy Set')

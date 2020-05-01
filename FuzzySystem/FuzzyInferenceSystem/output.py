@@ -91,7 +91,7 @@ class Output:
         for key in consequents.keys():  #self.get_outputs():
             universe = consequents[key][0].universe
             if not axes:
-                fig, ax = plt.subplots()
+                _, ax = plt.subplots()
             else:
                 ax = axes
             if i == 1:
