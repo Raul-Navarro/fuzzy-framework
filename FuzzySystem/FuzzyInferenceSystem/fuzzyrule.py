@@ -1,3 +1,10 @@
+# Copyright (c) 2020 Raul Navarro-Almanza,
+#   Universidad Autónoma de Baja California
+#
+# SPDX-License-Identifier: MIT
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 import copy
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
 from ..FuzzyVariable import fuzzyvariable as fv
@@ -347,6 +354,7 @@ class TSKConsequent():
         self.__build_in_func = False
         self.params = params
         self.function = function
+        self.__other = None
         if isinstance(function, (str, )):
             self.function = tsk_function_dict.get(function)
             if self.function is None:
@@ -377,9 +385,16 @@ class TSKConsequent():
     def get_params(self):
         return self.params
 
+    def add(self, other):
+        if isinstance(other, (TSKConsequent, )):
+            if self.__other is None:
+                self.__other = []
+            self.__other.append(other)
+
     def eval(self, x):
         x = np.array(list(x), dtype=np.float)
         x = x.squeeze()
+        output = []
         if x.ndim > 1:
             #multiple instances
             # dim: Instaces X Inputs
@@ -387,16 +402,22 @@ class TSKConsequent():
             if self.__build_in_func:
                 if self.params is None:
                     self.params = np.ones([x.shape[1] + 1, 1])
-                return self.function(x, self.params)
-            return [self.function(*x_i, *self.params) for x_i in x]
+                output.append(self.function(x, self.params))
+            else:
+                output.append([self.function(*x_i, *self.params) for x_i in x])
 
         else:
             if self.__build_in_func:
                 if self.params is None:
                     self.params = np.ones([len(x) + 1])
-                return self.function(x, self.params)
+                output.append(self.function(x, self.params))
             else:
-                return self.function(*x, *self.params)
+                output.append(self.function(*x, *self.params))
+
+        if isinstance(self.__other, (list, )):
+            for tsk_cons in self.__other:
+                output.append(tsk_cons.eval(x))
+        return np.array(output).squeeze()
 
     def __str__(self):
         return self.function.__name__

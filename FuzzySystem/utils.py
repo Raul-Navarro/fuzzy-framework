@@ -1,3 +1,10 @@
+# Copyright (c) 2020 Raul Navarro-Almanza,
+#   Universidad Autónoma de Baja California
+#
+# SPDX-License-Identifier: MIT
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 import pandas as pd
 import numpy as np
 from .fuzzy_operations import minimum, maximum, algebraic_prod, algebraic_sum
