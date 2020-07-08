@@ -16,4 +16,4 @@ from .FuzzyInferenceSystem.fuzzyrule import Antecedent, Consequent, FuzzyRule, T
 from .FuzzyInferenceSystem.output import Output
 from .MembershipFunction import Trimf, Gaussmf, Trapmf, Sigmoidmf, GBellmf, Logmf, Cauchymf, Tanhmf
 from .NonSingleton import NonSingleton
-from .utils import *
+from .utils import fuzzy_similarity, *
