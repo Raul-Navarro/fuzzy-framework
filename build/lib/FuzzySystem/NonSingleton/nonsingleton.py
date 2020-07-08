@@ -1,3 +1,11 @@
+# Copyright (c) 2020 Raul Navarro-Almanza,
+#   Universidad Autónoma de Baja California
+#
+# SPDX-License-Identifier: MIT
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
+
 class NonSingleton():
     def __init__(self, mf=None, values=None):
         self.mf = mf

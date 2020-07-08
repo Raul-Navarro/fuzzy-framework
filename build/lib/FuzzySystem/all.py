@@ -1,3 +1,10 @@
+# Copyright (c) 2020 Raul Navarro-Almanza,
+#   Universidad Autónoma de Baja California
+#
+# SPDX-License-Identifier: MIT
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 import copy
 import numpy as np
 import matplotlib.pyplot as plt

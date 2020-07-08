@@ -4,5 +4,8 @@
   "python.linting.enabled": true,
   "python.linting.pylintPath": "pylint",
   "editor.formatOnSave": true,
-  "python.linting.pylintEnabled": true
+  "python.linting.pylintEnabled": true,
+  "licenser.license": "MIT",
+  "licenser.author": "Raul Navarro-Almanza, Universidad Autónoma de Baja California",
+  "licenser.projectName": "FuzzySystem"
 }

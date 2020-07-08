@@ -1,3 +1,10 @@
+# Copyright (c) 2020 Raul Navarro-Almanza,
+#   Universidad Autónoma de Baja California
+#
+# SPDX-License-Identifier: MIT
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 import copy
 from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
 from ..FuzzyVariable import fuzzyvariable as fv
@@ -306,16 +313,64 @@ class Consequent:
         print(self)
 
 
+def linear_function(x, params):
+    if isinstance(x, (
+            list,
+            np.ndarray,
+    )) and isinstance(params, (list, np.ndarray)):
+        params = np.array(params)
+        x = np.array(x)
+        #multiple instances
+        if x.ndim == 2:
+            x_ = np.ones([x.shape[0], 1])
+            x_ = np.concatenate([x_, x], axis=1)
+            return np.dot(x_, params)
+        else:
+            x_ = np.concatenate([[1], x], axis=0)
+            return np.sum(x_ * params)
+
+
+def constant_function(x, params):
+    if not isinstance(
+            params, (int, float, np.int32, np.int64, np.float32, np.float64)):
+        raise ValueError('params value must be a number')
+    if isinstance(x, (
+            list,
+            np.ndarray,
+    )):
+        x = np.array(x)
+        #multiple instances
+        if x.ndim == 2:
+            return np.ones([x.shape[0]]) * params
+        else:
+            return params
+
+
+tsk_function_dict = {'linear': linear_function, 'constant': constant_function}
+
+
 class TSKConsequent():
-    def __init__(self, params, function, label=None):
-        if isinstance(params, (list, np.ndarray)):
+    def __init__(self, function, params=None, label=None):
+        self.__build_in_func = False
+        self.params = params
+        self.function = function
+        self.__other = None
+        if isinstance(function, (str, )):
+            self.function = tsk_function_dict.get(function)
+            if self.function is None:
+                raise ValueError(
+                    "build in functions must be one of them: {}".format(
+                        ', '.join(list(tsk_function_dict.keys()))))
+            else:
+                self.__build_in_func = True
+                # if isinstance(params, (int, np.int)):
+                #     self.params = np.ones([params], dtype=np.float64)
+        elif isinstance(params, (list, np.ndarray)):
             self.params = params
         else:
             raise ValueError("parameters must be an array")
 
-        if callable(function):
-            self.function = function
-        else:
+        if not callable(self.function):
             raise ValueError("'function' must be callable")
 
         if label != None:
@@ -330,10 +385,39 @@ class TSKConsequent():
     def get_params(self):
         return self.params
 
-    def eval(self, x, firing_strength, and_op=algebraic_prod):
-        if and_op == None:
-            return self.function(*x, *self.params)
-        return and_op(self.function(*x, *self.params), firing_strength)
+    def add(self, other):
+        if isinstance(other, (TSKConsequent, )):
+            if self.__other is None:
+                self.__other = []
+            self.__other.append(other)
+
+    def eval(self, x):
+        x = np.array(list(x), dtype=np.float)
+        x = x.squeeze()
+        output = []
+        if x.ndim > 1:
+            #multiple instances
+            # dim: Instaces X Inputs
+            x = x.T
+            if self.__build_in_func:
+                if self.params is None:
+                    self.params = np.ones([x.shape[1] + 1, 1])
+                output.append(self.function(x, self.params))
+            else:
+                output.append([self.function(*x_i, *self.params) for x_i in x])
+
+        else:
+            if self.__build_in_func:
+                if self.params is None:
+                    self.params = np.ones([len(x) + 1])
+                output.append(self.function(x, self.params))
+            else:
+                output.append(self.function(*x, *self.params))
+
+        if isinstance(self.__other, (list, )):
+            for tsk_cons in self.__other:
+                output.append(tsk_cons.eval(x))
+        return np.array(output).squeeze()
 
     def __str__(self):
         return self.function.__name__
@@ -389,10 +473,10 @@ class FuzzyRule():
             if isinstance(firing_strength, (list, np.ndarray)):
                 firing_strength = np.array(firing_strength)
                 np.set_printoptions(precision=2)
-                print(' {} = {} with weight = {:.2f}'.format(
+                print(' {}, fs = {} with weight = {:.2f}'.format(
                     str(self), firing_strength, self.weight))
             else:
-                print(' {} = {:.2f} with weight = {:.2f}'.format(
+                print(' {}, fs = {:.2f} with weight = {:.2f}'.format(
                     str(self), firing_strength, self.weight))
 
         if isinstance(firing_strength, (
@@ -414,9 +498,7 @@ class FuzzyRule():
         elif isinstance(self.consequent, (TSKConsequent)):
             if isinstance(x, (dict, )):
                 values = x.values()
-                return (self.consequent.eval(x=values,
-                                             firing_strength=None,
-                                             and_op=None), firing_strength)
+                return (self.consequent.eval(x=values), firing_strength)
             else:
                 raise ValueError("Inputs must be a tuple a dictionary")
         return [prop.eval(firing_strength) for prop in self.consequent]

@@ -1,3 +1,10 @@
+# Copyright (c) 2020 Raul Navarro-Almanza,
+#   Universidad Autónoma de Baja California
+#
+# SPDX-License-Identifier: MIT
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 from .. import config
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,6 +53,8 @@ class Output:
 
     @property
     def fuzzysets(self):
+        if self.type == 'Sugeno':
+            return self.get_array()
         if self.multiple_outputs:
             result = []
             for i in range(self._outputs.shape[1]):
@@ -89,7 +98,7 @@ class Output:
         for key in consequents.keys():  #self.get_outputs():
             universe = consequents[key][0].universe
             if not axes:
-                fig, ax = plt.subplots()
+                _, ax = plt.subplots()
             else:
                 ax = axes
             if i == 1:
@@ -103,7 +112,7 @@ class Output:
                             retstep=False,
                             dtype=None)
             for G in consequents[key]:
-                ax.fill_between(u, G.eval(u), -0.00001,
+                ax.fill_between(u, G.eval(u), 0,
                                 alpha=0.60)  #label=G.name, alpha=0.85)
             if defuzzifier is not None:
                 if isinstance(defuzzifier, (list, )):

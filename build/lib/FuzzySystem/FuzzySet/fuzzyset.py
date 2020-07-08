@@ -1,3 +1,10 @@
+# Copyright (c) 2020 Raul Navarro-Almanza,
+#   Universidad Autónoma de Baja California
+#
+# SPDX-License-Identifier: MIT
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 from .. import config
 import numpy as np
 import matplotlib.pyplot as plt
@@ -92,7 +99,7 @@ class FuzzySet:
         #u = np.unique(u)
         c = self.eval(u)
         if not axes:
-            fig, ax = plt.subplots()
+            _, ax = plt.subplots()
         else:
             ax = axes
         plt.title('Fuzzy Set')

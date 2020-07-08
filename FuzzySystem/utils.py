@@ -9,6 +9,43 @@ import pandas as pd
 import numpy as np
 from .fuzzy_operations import minimum, maximum, algebraic_prod, algebraic_sum
 
+from FuzzySystem import fuzzy_operations as fo
+from FuzzySystem.MembershipFunction import MembershipFunction
+
+
+sim = { 'sim1': lambda x,y: np.sum(fo.intersection(x,y, type='min'))/np.sum(fo.union(x,y,type='max')),
+        'sim2': lambda x,y: fo.maximum(fo.minimum(x, y)),
+        'sim3': lambda x,y: np.sum(fo.intersection(x,y, type='min'))/fo.maximum(np.sum(np.power(x,2)), np.sum(np.power(y,2)))[0],
+        'sim4': lambda x,y: np.sum(fo.intersection(x,y, type='min')/fo.union(x,y,type='max'))/len(x),
+        'sim5': lambda x,y: np.sum((2*fo.intersection(x,y, type='min'))/fo.union(x,y,type='sum'))/len(x),
+        'sim6': lambda x,y: 1-fo.maximum(np.abs(x-y)),
+        'sim7': lambda x,y: 1-np.sum(np.abs(x-y))/np.sum(np.abs(x+y)),
+        'sim8': lambda x,y: 1-np.sum(np.abs(x-y))/len(x),
+        'sim9': lambda x,y: np.sum(1-np.abs(x-y))/len(x),
+        'sim10': lambda x,y: np.sum((x-y)*np.log((1+x)/(1+y))+(y-x)*np.log((2-x)/(2-y))),
+        'sim11': lambda x,y: 1-(1/(2*np.log(2)))*np.sum((x-y)*np.log((1+x)/(1+y))+(y-x)*np.log((2-x)/(2-y))),
+        'sim12': lambda x,y: 1-np.sum(fo.maximum([fo.minimum(x,y),fo.minimum(1-x,1-y)])/\
+                   fo.maximum([fo.maximum(x,y),fo.maximum(1-x,1-y)]))/len(x),
+      }
+
+
+def fuzzy_similarity(A, B, points=100, method='sim1'):
+    if isinstance(A, (MembershipFunction, )):
+        universe = np.linspace(*A.universe, points)
+        x = A.eval(universe)
+    else:
+        x = A
+    if isinstance(B, (MembershipFunction, )):
+        universe = np.linspace(*B.universe, points)
+        y = B.eval(universe)
+    else:
+        y = B
+    if (isinstance(method, (str, ))):
+        if method in sim.keys():
+            return sim[method](x, y)
+        else:
+            raise Exception('{} does not exist in dict sim'.format(method))
+
 
 def format_inputs(x, inputs=None, data_columns=None, verbose=False):
     if isinstance(x, (np.ndarray, )):

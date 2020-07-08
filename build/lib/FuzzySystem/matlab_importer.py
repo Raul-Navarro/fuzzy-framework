@@ -1,3 +1,10 @@
+# Copyright (c) 2020 Raul Navarro-Almanza,
+#   Universidad Autónoma de Baja California
+#
+# SPDX-License-Identifier: MIT
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 from .MembershipFunction import Trapmf, Trimf, Gaussmf, GBellmf, Sigmoidmf
 from .FuzzyVariable.fuzzyvariable import FuzzyVariable
 from .FuzzySet.fuzzyset import FuzzySet

@@ -1,3 +1,10 @@
+# Copyright (c) 2020 Raul Navarro-Almanza,
+#   Universidad Autónoma de Baja California
+#
+# SPDX-License-Identifier: MIT
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 import pandas as pd
 import numpy as np
 from .fuzzy_operations import minimum, maximum, algebraic_prod, algebraic_sum
@@ -10,7 +17,8 @@ def format_inputs(x, inputs=None, data_columns=None, verbose=False):
         else:
             if input is not None:
                 x = dict(zip(list(inputs.keys()), x.T))
-            raise Exception('Inputs dictionary or list must be provided')
+            else:
+                raise Exception('Inputs dictionary or list must be provided')
 
     elif isinstance(x, (pd.DataFrame, )):
         x = x.to_dict(orient='list')
