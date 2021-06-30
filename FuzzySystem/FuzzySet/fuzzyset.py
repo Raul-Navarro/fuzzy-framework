@@ -58,7 +58,7 @@ class FuzzySet:
                         "Firing strength operator must be either 'min' or 'prod', get {}"
                         .format(self.fs_operator))
             else:
-                return [self.mf.eval(i) for i in x]
+                return self.mf.eval(x)
         else:
             if self.firing_strength is not None:
                 if self.fs_operator == 'min':
