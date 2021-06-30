@@ -5,16 +5,22 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-import copy
-import numpy as np
 import matplotlib.pyplot as plt
-import itertools
-import logging, sys
-from .. import config
-#logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+import numpy as np
+
+from FuzzySystem import config
+
+
+# logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 
 def divide(x, y):
+    '''Perform deviation with clip value [, MAX float]
+
+    :param x: value x
+    :param y: value y
+    :return: x/y, if y equals 0, then return the biggest float value
+    '''
     if y == 0:
         return float('inf')
     else:
@@ -22,7 +28,16 @@ def divide(x, y):
 
 
 class MembershipFunction:
+    '''Abstract class to define a Membership Function
+
+    :param params: List of design values of the membership function
+    :param universe: Range of domain limits
+    :param name: Name of the membership function
+    :param complement: If is True, the complement evaluation is performed
+    '''
+
     name = 'Membership Function'
+    '''Default reference name'''
 
     def __init__(self, params, universe=None, name=None, complement=False):
         self.__complement = complement
@@ -37,31 +52,63 @@ class MembershipFunction:
             self.universe = [-10, 10]
 
     def eval(self, x):
+        ''' Evaluates the membership function given a input x
+
+        :param x: input
+        :type x: number, list.
+        :return: resulted value(s) of the evaluation
+        '''
         if self.__complement:
             return 1 - self.compute(x)
         else:
             return self.compute(x)
 
     def compute(self, x):
+        '''Perform the evaluation of the membership function
+
+        :param x: Input
+        :type x: number, list, numpy array
+        :return: evaluation result
+        '''
         pass
 
     def complement(self):
+        '''Performs the complement evaluation to the membership function
+
+        :return: self
+        '''
         self.__complement = not self.__complement
         return self
 
     @property
     def area(self):
+        '''Calculates the area of the membership function
+
+        :return: (float) area
+        '''
         pass
 
     @property
     def centroid(self):
+        '''Calculates the centroid of the membership function
+
+        :return: (float) centroid
+        '''
         pass
 
     @property
     def spread(self):
+        '''Calculates the spread of the membership function
+
+        :return: (float) spread
+        '''
         pass
 
     def set_params(self, params):
+        '''Set the new parameters to design the membership function
+
+        :param params: list of membership function design parameters
+        '''
         pass
 
     def show(self,
@@ -69,14 +116,22 @@ class MembershipFunction:
              axes=None,
              fmt='-',
              kwargs={}):
+        '''Plots the membership function
+
+        :param points: number of points to evaluate the membership function
+        :param axes: for external plotting.
+        :type axes: plt.axes
+        :param fmt: style format of the line
+        :param kwargs: additional values for plt
+        '''
         u = np.linspace(self.universe[0],
                         self.universe[1],
                         num=points,
                         endpoint=True,
                         retstep=False,
                         dtype=None)
-        #u = np.sort(np.concatenate([u, self.params], axis=0))
-        #u = np.unique(u)
+        # u = np.sort(np.concatenate([u, self.params], axis=0))
+        # u = np.unique(u)
         c = [self.eval(e) for e in u]
         if not axes:
             fig, ax = plt.subplots()
@@ -102,6 +157,13 @@ class MembershipFunction:
 
 
 class Trimf(MembershipFunction):
+    '''Class to define a Triangular Membership Function
+
+        :param params: List of design values of the membership function
+        :param universe: Range of domain limits
+        :param name: Name of the membership function
+        :param complement: If is True, the complement evaluation is performed
+    '''
     name = 'Triangular mf'
 
     def __init__(self, params, universe=None, name=None, complement=False):
@@ -130,6 +192,13 @@ class Trimf(MembershipFunction):
 
 
 class Gaussmf(MembershipFunction):
+    '''Class to define a Gaussian Membership Function
+
+            :param params: List of design values of the membership function
+            :param universe: Range of domain limits
+            :param name: Name of the membership function
+            :param complement: If is True, the complement evaluation is performed
+    '''
     name = 'Gaussian mf'
 
     def __init__(self, params, universe=None, name=None, complement=False):
@@ -137,7 +206,7 @@ class Gaussmf(MembershipFunction):
         super().__init__(params, universe, name, complement)
 
     def compute(self, x):
-        return np.exp(-1 * (x - self.c)**2 / (2.0 * self.sigma**2))
+        return np.exp(-1 * (x - self.c) ** 2 / (2.0 * self.sigma ** 2))
 
     def area(self):
         return self.sigma * np.sqrt(2.0 * np.pi)
@@ -155,6 +224,13 @@ class Gaussmf(MembershipFunction):
 
 
 class Logmf(MembershipFunction):
+    '''Class to define a Logistic Membership Function
+
+            :param params: List of design values of the membership function
+            :param universe: Range of domain limits
+            :param name: Name of the membership function
+            :param complement: If is True, the complement evaluation is performed
+    '''
     name = 'Logistic mf'
 
     def __init__(self, params, universe=None, name=None, complement=False):
@@ -162,8 +238,8 @@ class Logmf(MembershipFunction):
         super().__init__(params, universe, name, complement)
 
     def compute(self, x):
-        #return 1./(1+np.exp(-x))
-        return 2. / (1 + np.exp(((x - self.c) / self.a)**2))
+        # return 1./(1+np.exp(-x))
+        return 2. / (1 + np.exp(((x - self.c) / self.a) ** 2))
 
     @property
     def spread(self):
@@ -175,6 +251,13 @@ class Logmf(MembershipFunction):
 
 
 class Tanhmf(MembershipFunction):
+    '''Class to define a Tanh Membership Function
+
+            :param params: List of design values of the membership function
+            :param universe: Range of domain limits
+            :param name: Name of the membership function
+            :param complement: If is True, the complement evaluation is performed
+    '''
     name = 'Tanh mf'
 
     def __init__(self, params, universe=None, name=None, complement=False):
@@ -182,7 +265,7 @@ class Tanhmf(MembershipFunction):
         super().__init__(params, universe, name, complement)
 
     def compute(self, x):
-        y = 1 + np.tanh(-1 * ((x - self.c) / self.a)**2)
+        y = 1 + np.tanh(-1 * ((x - self.c) / self.a) ** 2)
         return y
 
     @property
@@ -195,6 +278,13 @@ class Tanhmf(MembershipFunction):
 
 
 class Sigmoidmf(MembershipFunction):
+    '''Class to define a Sigmoid Membership Function
+
+            :param params: List of design values of the membership function
+            :param universe: Range of domain limits
+            :param name: Name of the membership function
+            :param complement: If is True, the complement evaluation is performed
+    '''
     name = 'Sigmoid mf'
 
     def __init__(self, params, universe=None, name=None, complement=False):
@@ -215,6 +305,13 @@ class Sigmoidmf(MembershipFunction):
 
 
 class Cauchymf(MembershipFunction):
+    '''Class to define a Caouchy Membership Function
+
+            :param params: List of design values of the membership function
+            :param universe: Range of domain limits
+            :param name: Name of the membership function
+            :param complement: If is True, the complement evaluation is performed
+    '''
     name = 'Cauchy mf'
 
     def __init__(self, params, universe=None, name=None, complement=False):
@@ -222,7 +319,7 @@ class Cauchymf(MembershipFunction):
         super().__init__(params, universe, name, complement)
 
     def compute(self, x):
-        y = 1. / (1 + ((x - self.c) / self.a)**2)
+        y = 1. / (1 + ((x - self.c) / self.a) ** 2)
         return y
 
     @property
@@ -235,6 +332,13 @@ class Cauchymf(MembershipFunction):
 
 
 class Trapmf(MembershipFunction):
+    '''Class to define a Trapezoidal Membership Function
+
+            :param params: List of design values of the membership function
+            :param universe: Range of domain limits
+            :param name: Name of the membership function
+            :param complement: If is True, the complement evaluation is performed
+    '''
     name = 'Trapezoidal mf'
 
     def __init__(self, params, universe=None, name=None, complement=False):
@@ -277,6 +381,13 @@ class Trapmf(MembershipFunction):
 
 
 class GBellmf(MembershipFunction):
+    '''Class to define a Generalized Gaussian Bell Membership Function
+
+            :param params: List of design values of the membership function
+            :param universe: Range of domain limits
+            :param name: Name of the membership function
+            :param complement: If is True, the complement evaluation is performed
+    '''
     name = 'Generalized Bell mf'
 
     def __init__(self, params, universe=None, name=None, complement=False):
@@ -284,7 +395,7 @@ class GBellmf(MembershipFunction):
         super().__init__(params, universe, name, complement)
 
     def compute(self, x):
-        tmp = ((x - self.c) / self.a)**2
+        tmp = ((x - self.c) / self.a) ** 2
         if tmp == 0 and self.b == 0:
             y = 0.5
         elif tmp == 0 and self.b < 0:

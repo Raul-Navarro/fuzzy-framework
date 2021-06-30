@@ -1,19 +1,15 @@
-import copy
-import numpy as np
-import matplotlib.pyplot as plt
-import itertools
-import logging, sys
+"""A python framework to build Fuzzy Inference Systems
 
+    Raul Navarro-Almanza <rnavarro@uabc.edu.mx>
+"""
+
+from FuzzySystem.defuzzifier import *
+from FuzzySystem.membership_function import *
+from FuzzySystem.nonsingleton import *
+from FuzzySystem.fis import FuzzyInferenceSystem
+from FuzzySystem.fuzzyrule import Antecedent, Consequent, FuzzyRule, TSKConsequent
+from FuzzySystem.output import Output
+from FuzzySystem.fuzzyset import FuzzySet
+from FuzzySystem.fuzzyvariable import FuzzyVariable
 from .matlab_importer import import_fis_matlab
-
-#logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-
-from .FuzzySet.fuzzyset import FuzzySet
-from .FuzzyVariable.fuzzyvariable import FuzzyVariable
-from .Defuzzifier.defuzzifier import *
-from .FuzzyInferenceSystem.fis import FuzzyInferenceSystem
-from .FuzzyInferenceSystem.fuzzyrule import Antecedent, Consequent, FuzzyRule, TSKConsequent
-from .FuzzyInferenceSystem.output import Output
-from .MembershipFunction import Trimf, Gaussmf, Trapmf, Sigmoidmf, GBellmf, Logmf, Cauchymf, Tanhmf
-from .NonSingleton import NonSingleton
 from .utils import fuzzy_similarity

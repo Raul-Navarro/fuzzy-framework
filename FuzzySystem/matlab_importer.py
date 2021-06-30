@@ -5,12 +5,12 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-from .MembershipFunction import Trapmf, Trimf, Gaussmf, GBellmf, Sigmoidmf
-from .FuzzyVariable.fuzzyvariable import FuzzyVariable
-from .FuzzySet.fuzzyset import FuzzySet
-from .FuzzyInferenceSystem.fis import FuzzyInferenceSystem
-from .FuzzyInferenceSystem.fuzzyrule import FuzzyRule, Antecedent, Consequent
-import numpy as np
+from FuzzySystem.fis import FuzzyInferenceSystem
+from FuzzySystem.fuzzyrule import FuzzyRule, Antecedent, Consequent
+from FuzzySystem.fuzzyset import FuzzySet
+from FuzzySystem.fuzzyvariable import FuzzyVariable
+from FuzzySystem.membership_function import Trapmf, Trimf, Gaussmf, GBellmf, Sigmoidmf
+
 """
 Membership functions in matlab: 
 dsigmf, evalmf, gauss2mf, gaussmf,
@@ -28,10 +28,12 @@ MF_DICTIONARY = {
 
 
 def strip_array(array):
+    ''':meta private:'''
     return [text.strip() for text in array if text.strip() != '']
 
 
 def read_rules_matlab(file=None, txt=None):
+    ''':meta private:'''
     rules_array = []
     if file is not None:
         with open(file, 'r') as f:
@@ -60,8 +62,10 @@ def read_rules_matlab(file=None, txt=None):
 
 
 def import_rules_matlab(rules, fis_inputs, fis_outputs):
+    ''':meta private:'''
     antecedent = []
     consequent = []
+    fis_rules = None
     for i, rule in enumerate(rules):
         antecedent.append(Antecedent(conector=min))
         consequent.append(Consequent(conector=min))
@@ -79,6 +83,7 @@ def import_rules_matlab(rules, fis_inputs, fis_outputs):
 
 
 def read_fis_file(file):
+    ''':meta private:'''
     fis_config = {}
     i = 1
     sections = ['[System]', '[Input{}]', '[Output{}]', '[Rules]']
@@ -145,6 +150,7 @@ def read_fis_file(file):
 
 
 def parse_fis_file(conf):
+    ''':meta private:'''
     for inp in range(0, int(conf['system']['NumInputs'])):
         # var_name = conf['inputs'][inp]['Name']
         # interval = conf['inputs'][inp]['Range']
@@ -176,6 +182,7 @@ def parse_fis_file(conf):
 
 
 def get_io_fis(conf):
+    ''':meta private:'''
     fis_input = []
     for input in conf['inputs']:
         fuzzy_sets = []
@@ -196,6 +203,11 @@ def get_io_fis(conf):
 
 
 def import_fis_matlab(file):
+    '''Function to import a mathlab type fis file to create an FuzzySystem object
+
+    :param file: [str] path to the file to import
+    :return [FuzzySystem] a FuzzySystem equivalent to the input fis configuration file
+    '''
     conf = read_fis_file(file)
     conf = parse_fis_file(conf)
     fis_input, fis_output = get_io_fis(conf)

@@ -1,26 +1,27 @@
-# Copyright (c) 2020 Raul Navarro-Almanza,
-#   Universidad Autónoma de Baja California
-#
-# SPDX-License-Identifier: MIT
-# This software is released under the MIT License.
-# https://opensource.org/licenses/MIT
+"""A python framework to build Fuzzy Inference Systems
+.. moduleauthor:: Raul Navarro-Almanza<rnavarro@uabc.edu.mx>
+"""
 
-from .. import config
-import numpy as np
-import matplotlib.pyplot as plt
-import logging
-from .output import Output
-from .fuzzyrule import TSKConsequent, Agregation, FuzzyRule, Antecedent, Consequent
-from ..FuzzyVariable import fuzzyvariable
-from ..fuzzy_operations import algebraic_sum, algebraic_prod, minimum, maximum
-import pandas as pd
+from FuzzySystem.fuzzyrule import TSKConsequent, Aggregation, FuzzyRule, Antecedent, Consequent
+from FuzzySystem.output import Output
+from FuzzySystem import config, fuzzyvariable
 
 
 class FuzzyInferenceSystem:
+    '''Class to perform the inference process using fuzzy logic
+
+        :param rules: List of rules to conform the knowledge base
+        :param points: Number of points to perform the evaluation
+        :param inputs: dictionary of inputs
+        :param outputs: dictionary of outputs
+        :param and_op: Conjunction operator
+        :param or_op: Union operator
+        :param verbose: flag to print information
+        '''
+
     def __init__(self,
                  rules,
                  points=config.default_points,
-                 defuzzifier=None,
                  inputs=None,
                  outputs=None,
                  and_op='min',
@@ -61,18 +62,31 @@ class FuzzyInferenceSystem:
                 self.rules = [rules]
 
     def add_rule(self, rule):
-        if isinstance(rule, (FuzzyRule, )):
+        '''Add a rule to the existing knowledge base
+
+        :param rule: The rule to append to the system
+        :type rule: FuzzyRule
+        '''
+        if isinstance(rule, (FuzzyRule,)):
             self.rules.append(rule)
 
     def show_rules(self):
+        '''Shows in natural language the knowledge base'''
         print("\nFuzzy System Rules:")
         for r in self.rules:
             print(str(r))
 
-    def eval(self, inputs, data_columns=None, verbose=False):
+    def eval(self, inputs, verbose=False):
+        '''Evaluates the fuzzy inference system
+
+        :param inputs: Inputs to evaluate.
+        :type inputs: number, list, pandas data frame
+        :param verbose: flog to print information
+        :return: Output object that contains the fuzzy set of the evaluated consequent
+        '''
         verbose = self.verbose or verbose
 
-        from ..utils import format_inputs
+        from .utils import format_inputs
         inputs = format_inputs(inputs, inputs=self.inputs, verbose=verbose)
 
         return Output([
@@ -84,6 +98,7 @@ class FuzzyInferenceSystem:
 
     @property
     def inputs(self):
+        '''Dictionary with the system's inputs'''
         input = {}
         if self.all_inputs:
             for fvar in self.all_inputs:
@@ -95,15 +110,16 @@ class FuzzyInferenceSystem:
 
     @property
     def outputs(self):
+        '''Dictionary with the system's outputs'''
         output = {}
         if self.all_outputs:
-            if isinstance(self.all_outputs, (fuzzyvariable.FuzzyVariable, )):
+            if isinstance(self.all_outputs, (fuzzyvariable.FuzzyVariable,)):
                 output[self.all_outputs.name] = self.all_outputs
             elif isinstance(self.all_outputs[0],
-                            (fuzzyvariable.FuzzyVariable, )):
+                            (fuzzyvariable.FuzzyVariable,)):
                 for fvar in self.all_outputs:
                     output[fvar.name] = fvar
-            elif isinstance(self.all_outputs[0], (str, )):
+            elif isinstance(self.all_outputs[0], (str,)):
                 return self.all_outputs
             else:
                 return output
@@ -115,6 +131,7 @@ class FuzzyInferenceSystem:
 
     @property
     def matrix_rules(self):
+        '''Matrix with the relationships between antecedents and consequent'''
         mat = []
         # input = self.inputs
         # output = self.outputs
@@ -124,7 +141,7 @@ class FuzzyInferenceSystem:
                     list,
                     Antecedent,
             )):
-                if isinstance(rule.antecedent.propositions, (Agregation, )):
+                if isinstance(rule.antecedent.propositions, (Aggregation,)):
                     r_mat = rule.antecedent.propositions.get_tuples()
                 else:
                     for proposition in rule.antecedent.propositions:
@@ -140,6 +157,11 @@ class FuzzyInferenceSystem:
         return mat
 
     def get_matrix_rules(self, negatives=True):
+        '''Generates the matrix with the associations in the rules
+
+        :param negatives: If is True, the negated antecedents are multiplied by -1
+        :return: Matrix with the rule associations.
+        '''
         # inputs_id = dict(
         #     zip(self.inputs.keys(), range(0, len(self.inputs.keys()))))
         # outputs_id = dict(
@@ -184,6 +206,10 @@ class FuzzyInferenceSystem:
         return mrules
 
     def get_structure(self):
+        '''Create a json representation of the FIS structure
+
+        :return: Dictionary with all the elements in the FIS
+        '''
         structure = {}
         name_dict = {'Gaussian mf': 'gaussmf'}
         for k in self.inputs.keys():
@@ -204,7 +230,7 @@ class FuzzyInferenceSystem:
 
         if isinstance(outputs, (list, )):
             output_list = outputs
-        elif isinstance(outputs, (fuzzyvariable.FuzzyVariable, )):
+        elif isinstance(outputs, (fuzzyvariable.FuzzyVariable,)):
             output_list = output_list + [[
                 name_dict[f.mf.name], [f.name, f.mf.params, f.universe]
             ] for f in outputs.fuzzysets]

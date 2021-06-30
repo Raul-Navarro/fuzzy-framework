@@ -9,10 +9,16 @@ import numpy as np
 
 
 def algebraic_sum(x, y=None):
+    '''Performs algebraic sum between x and y, or x if y is None
+
+    :param x: [array] values
+    :param y: [array, optional] values
+    :return: array of values. x + y - x*y
+    '''
     if y is not None:
-        if not isinstance(x, (list, )):
+        if not isinstance(x, (list,)):
             x = [x]
-        if not isinstance(y, (list, )):
+        if not isinstance(y, (list,)):
             y = [y]
         if len(x) == len(y):
             return [xi + yi - xi * yi for xi, yi in zip(x, y)]
@@ -31,10 +37,16 @@ def algebraic_sum(x, y=None):
 
 
 def algebraic_prod(x, y=None):
+    '''Performs algebraic product between x and y, or x if y is None
+
+        :param x: [array] values
+        :param y: [array, optional] values
+        :return: array of values. x*y
+    '''
     if y is not None:
-        if not isinstance(x, (list, )):
+        if not isinstance(x, (list,)):
             x = [x]
-        if not isinstance(y, (list, )):
+        if not isinstance(y, (list,)):
             y = [y]
         if len(x) == len(y):
             return [xi * yi for xi, yi in zip(x, y)]
@@ -47,6 +59,12 @@ def algebraic_prod(x, y=None):
 
 
 def maximum(x, y=None):
+    '''Performs the maximum between x and y, or x if y is None
+
+        :param x: [array] values
+        :param y: [array, optional] values
+        :return: array of values. max(x,y)
+    '''
     if y is not None:
         if not isinstance(x, (list, np.ndarray,)):
             x = [x]
@@ -64,6 +82,12 @@ def maximum(x, y=None):
 
 
 def minimum(x, y=None):
+    '''Performs the minimum between x and y, or x if y is None
+
+        :param x: [array] values
+        :param y: [array, optional] values
+        :return: array of values. min(x,y)
+    '''
     if y is not None:
         if not isinstance(x, (list, np.ndarray,)):
             x = [x]
@@ -81,6 +105,13 @@ def minimum(x, y=None):
 
 
 def union(x, y, type='max'):
+    '''Performs union between x and y
+
+        :param x: [array] values
+        :param y: [array] values
+        :param type: [str] union operator. "max" or "sum"
+        :return: array of values
+    '''
     if type == 'max':
         return np.squeeze(maximum(x, y))
     elif type == 'sum':
@@ -90,6 +121,13 @@ def union(x, y, type='max'):
 
 
 def intersection(x, y, type='min'):
+    '''Performs intersection between x and y
+
+            :param x: [array] values
+            :param y: [array] values
+            :param type: [str] union operator. "min" or "prod"
+            :return: array of values
+    '''
     if type == 'min':
         return np.squeeze(minimum(x, y))
     elif type == 'prod':

@@ -5,19 +5,27 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-from .. import config
-import numpy as np
 import matplotlib.pyplot as plt
-import itertools
-import logging, sys
+import numpy as np
+
+from FuzzySystem import config
 
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
 
-#from ..Defuzzifier.defuzzifier  import Defuzzifier
+
+# from ..Defuzzifier.defuzzifier  import Defuzzifier
 
 
 class Output:
+    '''A class to represent the output of the FIS evaluation
+
+    :param fuzzy_output: the resulted list of consequent evaluations
+    :param universe: range of the domain limits
+    :param type: fuzzy inference system type. "Mamdani" or "Sugeno"
+    :type type: str
+    '''
+
     def __init__(self, fuzzy_output, universe=None, type='Mamdani'):
         self.type = type
         self.multiple_outputs = False
@@ -35,13 +43,23 @@ class Output:
             raise Exception("Unknown Fuzzy Type System")
 
     def get_array(self, nout=0):
+        '''Recalls an specific output
+
+        :param nout: index of the output to recall
+        :return: Output object
+        '''
         if self.multiple_outputs:
             return self._outputs[:, nout, :]
-            #[output[nout] for output in self._outputs]
+            # [output[nout] for output in self._outputs]
         return self._outputs
 
     @staticmethod
     def output_toDict(output):
+        '''Converts the output list to a dictionary
+
+        :param output: a Output object to convert
+        :return: Dictionary of the output
+        '''
         G = {}
         for rule_output in output:
             d = dict(rule_output)
@@ -53,6 +71,7 @@ class Output:
 
     @property
     def fuzzysets(self):
+        '''Gets the consequent fuzzy sets'''
         if self.type == 'Sugeno':
             return self.get_array()
         if self.multiple_outputs:
@@ -70,10 +89,15 @@ class Output:
         return Output.output_toDict(self._outputs)
 
     def get_outputs(self, nout=0):
+        '''Gets the list of output' names
+
+        :param nout: number of a specific output to get their name
+        :return: List of names
+        '''
         if self.type == 'Mamdani':
             if self.multiple_outputs:
                 temp = self._outputs[:, nout, :]
-                #temp = [output[nout] for output in self._outputs]
+                # temp = [output[nout] for output in self._outputs]
                 return Output.output_toDict(temp).keys()
             return Output.output_toDict(self._outputs).keys()
         elif self.type == 'Sugeno':
@@ -85,6 +109,15 @@ class Output:
              axes=None,
              label=True,
              nout=0):
+        '''Plots the output of a given evaluated FIS
+
+        :param defuzzifier: (optional) shows the crisp value of the output given a defuzzifier
+        :type defuzzifier: Defuzzifier
+        :param points: number of points to evaluate the output area
+        :param axes: for external plotting
+        :param label: label to show in the figure
+        :param nout: index of a specific output
+        '''
         if self.type == 'Sugeno':
             return None
 
@@ -93,7 +126,7 @@ class Output:
         selected_output = self._outputs
         if self.multiple_outputs:
             selected_output = self._outputs[:, nout, :]
-            #[output[nout] for output in self._outputs]
+            # [output[nout] for output in self._outputs]
         consequents = Output.output_toDict(selected_output)
         for key in consequents.keys():  #self.get_outputs():
             universe = consequents[key][0].universe
