@@ -21,11 +21,12 @@ class Defuzzifier:
     def __init__(self,
                  output,
                  universe=None,
-                 samples=100,
+                 samples=config.default_points,
                  nout=0,
                  multiple_instances=True):
         self.multiple_instances = False
-        if isinstance(output, (Output, )):
+        print(str(output.__class__))
+        if isinstance(output, (Output,)) or 'Output' in str(output.__class__):
             self.multiple_instances = output.multiple_outputs and multiple_instances
             self.output = output.fuzzysets
         elif isinstance(output, (

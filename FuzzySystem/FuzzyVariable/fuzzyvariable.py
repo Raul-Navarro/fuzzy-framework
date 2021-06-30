@@ -66,7 +66,7 @@ class FuzzyVariable:
             ax = axes
         ax.set_title(self.name)
         for fs in self.fuzzysets:
-            ax.plot(u, [fs.eval(e) for e in u], format_strings, label=fs.name)
+            ax.plot(u, fs.eval(u), format_strings, label=fs.name)
         #if self.firing_strength:
         #    ax.axhline(self.firing_strength, color='black', lw=2)
         ax.axhline(0, color='black', lw=1)
