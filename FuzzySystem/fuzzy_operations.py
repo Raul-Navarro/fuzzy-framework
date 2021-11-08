@@ -48,12 +48,13 @@ def algebraic_prod(x, y=None):
 
 def maximum(x, y=None):
     if y is not None:
-        if not isinstance(x, (list, )):
+        if not isinstance(x, (list, np.ndarray,)):
             x = [x]
-        if not isinstance(y, (list, )):
+        if not isinstance(y, (list, np.ndarray,)):
             y = [y]
         if len(x) == len(y):
             return np.maximum(x, y)
+        raise Exception('X and Y have different lenghts')
     else:
         x = np.array(x)
         if x.ndim > 1:
@@ -64,12 +65,13 @@ def maximum(x, y=None):
 
 def minimum(x, y=None):
     if y is not None:
-        if not isinstance(x, (list, )):
+        if not isinstance(x, (list, np.ndarray,)):
             x = [x]
-        if not isinstance(y, (list, )):
+        if not isinstance(y, (list, np.ndarray,)):
             y = [y]
         if len(x) == len(y):
             return np.minimum(x, y)
+        raise Exception('X and Y have different lenghts')
     else:
         x = np.array(x)
         if x.ndim > 1:

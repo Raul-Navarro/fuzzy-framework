@@ -5,17 +5,26 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-from .. import config
+from FuzzySystem import config
 import numpy as np
 #import matplotlib.pyplot as plt
 #import itertools
 #import logging, sys
-from ..FuzzyInferenceSystem.output import Output
+from FuzzySystem.output import Output
 
 output_toDict = Output.output_toDict
 
 
 class Defuzzifier:
+    '''Abstract class to design defuzzifiers
+
+    :param output: [Output] an output resulted of the implication process
+    :param universe: [list] range of the domain limits [min, max]
+    :param samples: [int] number of samples used to calculate the defuzzification
+    :param nout: [int] index of the output to defuzzify
+    :param multiple_instances: [bool]  flag to define if the Output corresponds to multiple outputs
+    '''
+
     name = "Defuzzifier"
 
     def __init__(self,
@@ -24,6 +33,7 @@ class Defuzzifier:
                  samples=config.default_points,
                  nout=0,
                  multiple_instances=True):
+        self.nout = nout
         self.multiple_instances = False
         print(str(output.__class__))
         if isinstance(output, (Output,)) or 'Output' in str(output.__class__):
@@ -43,21 +53,36 @@ class Defuzzifier:
         self.samples = samples
 
     def eval(self):
+        '''Performs the defuzzification process
+
+        :return: the crisp value
+        '''
         if self.multiple_instances:
             return [self.compute(e) for e in self.output]
         else:
             return self.compute(self.output)
 
     def compute(self, fs):
+        '''abstract method. Performs the defuzzification process
+
+        :param fs: [firing strength] firing strength values
+        :return: crisp values
+        '''
         pass
 
 
 class TSKDefuzzifier:
+    '''A class to perform the weighted average of the function outputs
+
+    :param output: [Output] the output object to perform the defuzzification
+    '''
+
     name = "TSK Defuzzifier"
+    '''Default reference name'''
 
     def __init__(self, output):
         self.multiple_instances = False
-        if isinstance(output, (Output, )):
+        if isinstance(output, (Output,)):
             if output.type == 'Sugeno':
                 self.g = output.get_array()
                 self.fs = output.firing_strength
@@ -68,17 +93,31 @@ class TSKDefuzzifier:
                 "Output must be a List of rules' output or an Output object")
 
     def eval(self):
+        '''Evaluates and computes de crisp value
+
+        :return: output crisp value
+        '''
         return self.compute()
 
     def compute(self):
+        '''Performs the weighted average between firing strength and output functions
+
+        :meta private:
+        :return: output crisp value
+        '''
         self.g = np.array(self.g)
         self.fs = np.array(self.fs)
         fs_ = self.fs / self.fs.sum(axis=0)
         return np.sum(self.g * fs_, axis=0)
-        #return np.sum(self.fs * self.g) / np.sum(self.fs)
+        # return np.sum(self.fs * self.g) / np.sum(self.fs)
 
 
-class Aggregator():
+class Aggregator:
+    '''Class for output aggregation through the maximum
+
+    :meta private:
+    '''
+
     def __init__(self, fuzzySets):
         self.fuzzySets = fuzzySets
 
@@ -92,7 +131,10 @@ class Aggregator():
 
 
 class Centroid(Defuzzifier):
+    '''A class for Centroid method defuzzification'''
+
     name = "Centroid"
+    """Defaulf reference name"""
 
     def compute(self, fs):
         self.G = {}
@@ -105,7 +147,10 @@ class Centroid(Defuzzifier):
 
 
 class Heights(Defuzzifier):
+    '''A class for Heights method defuzzification'''
+
     name = "Heights"
+    '''Default reference name'''
 
     def compute(self, fs):
         self.G = {}
@@ -128,7 +173,10 @@ class Heights(Defuzzifier):
 
 
 class CenterOfSets(Defuzzifier):
+    '''A class for Center of Sets method defuzzification'''
+
     name = "Center of Sets"
+    '''Default reference name'''
 
     def compute(self, fs):
         self.G = {}
@@ -149,7 +197,10 @@ class CenterOfSets(Defuzzifier):
 
 
 class MeanOfMaximum(Defuzzifier):
+    '''A class for Mean of Maximum  method defuzzification'''
+
     name = "Mean Of Maximum"
+    '''Default reference name'''
 
     def compute(self, fs):
         self.G = {}
@@ -161,7 +212,10 @@ class MeanOfMaximum(Defuzzifier):
 
 
 class ModifiedHeights(Defuzzifier):
+    '''A class for Modified Heights method defuzzification'''
+
     name = "Modified Heights"
+    '''Default reference name'''
 
     def compute(self, fs):
         self.G = {}
@@ -185,7 +239,10 @@ class ModifiedHeights(Defuzzifier):
 
 
 class LastOfMaximum(Defuzzifier):
+    '''A class for Last of Maximum method defuzzification'''
+
     name = "Least Of Maximum"
+    '''Default reference name'''
 
     def compute(self, fs):
         self.G = {}
@@ -197,7 +254,10 @@ class LastOfMaximum(Defuzzifier):
 
 
 class FirstOfMaximum(Defuzzifier):
+    '''A class for First of Maximum method defuzzification'''
+
     name = "First Of Maximum"
+    '''Default reference name'''
 
     def compute(self, fs):
         self.G = {}

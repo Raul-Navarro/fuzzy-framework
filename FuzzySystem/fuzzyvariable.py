@@ -5,14 +5,22 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-from .. import config
-from ..FuzzyInferenceSystem.fuzzyrule import Proposition
-from ..FuzzySet.fuzzyset import FuzzySet
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
+from FuzzySystem import config
+from FuzzySystem.fuzzyrule import Proposition
 
 
 class FuzzyVariable:
+    ''' A class for modeling Fuzzy Variables
+
+    :param name: Label to fuzzy variable domain
+    :type name: str
+    :param fuzzysets: List of fuzzy sets which the fuzzy variable can take as values
+    :param universe: Range that delimits the inferior and superior domain limits.
+    '''
+
     def __init__(self, name, fuzzysets, universe=None):
         self.name = name
         self.fuzzysets = fuzzysets
@@ -30,16 +38,34 @@ class FuzzyVariable:
         return [inf, sup]
 
     def eval(self, x):
+        ''' Evaluates the fuzzy variable given some input
+
+        :param x: Input values
+        :type x: number, list, dictionary, pandas data frame
+
+        :return: Array of tuples with the name and evaluation of each fuzzy set [(name, eval),...]
+        '''
         return [(f.name, f(x)) for f in self.fuzzysets]
 
     def get(self, name):
+        '''Recall a fuzzy set object given a name
+
+        :param name: name of the fuzzy set to get
+        :return: FuzzySet object
+        '''
         for f in self.fuzzysets:
             if f.name == name:
                 return f
         return None
 
     def discrete_universe(self, points=config.default_points, universe=None):
-        if universe == None:
+        '''Creates a list of numbers between the universe limits range
+
+        :param points: number of points to generate
+        :param universe: range of the universe limits
+        :return: Array of numbers in the universe
+        '''
+        if universe is None:
             universe = self.universe
         u = np.linspace(universe[0],
                         universe[1],
@@ -47,19 +73,29 @@ class FuzzyVariable:
                         endpoint=True,
                         retstep=False,
                         dtype=None)
-        #supports = np.array([fs.mf.params for fs in self.fuzzysets]).flatten()
-        #supports = list(set(supports) - set(np.intersect1d(supports, u)))
-        #u = u[:-len(supports)]
+        # supports = np.array([fs.mf.params for fs in self.fuzzysets]).flatten()
+        # supports = list(set(supports) - set(np.intersect1d(supports, u)))
+        # u = u[:-len(supports)]
         u = u.flatten()
-        #u = np.sort(np.concatenate([u, supports], axis=0))
+        # u = np.sort(np.concatenate([u, supports], axis=0))
         return u
 
     def show(self,
              points=config.default_points,
              axes=None,
              format_strings='-'):
+        '''
+        Plots all fuzzy set's membership function in the fuzzy variable
+
+        :param points: number of samples to evaluate the membership function
+        :type points: int
+        :param axes: for outside plotting
+        :type axes: plt.axes
+        :param format_strings: line style
+        '''
         u = self.discrete_universe(points)
-        #members = []
+
+        # members = []
         if not axes:
             fig, ax = plt.subplots()
         else:
@@ -67,7 +103,7 @@ class FuzzyVariable:
         ax.set_title(self.name)
         for fs in self.fuzzysets:
             ax.plot(u, fs.eval(u), format_strings, label=fs.name)
-        #if self.firing_strength:
+        # if self.firing_strength:
         #    ax.axhline(self.firing_strength, color='black', lw=2)
         ax.axhline(0, color='black', lw=1)
         ax.legend(loc='upper right',

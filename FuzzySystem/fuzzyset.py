@@ -5,17 +5,27 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-from .. import config
-import numpy as np
 import matplotlib.pyplot as plt
-import itertools
-import logging, sys
-from ..NonSingleton.nonsingleton import NonSingleton
-from ..fuzzy_operations import intersection
+import numpy as np
+
+from FuzzySystem import config
+from FuzzySystem.nonsingleton import NonSingleton
+from FuzzySystem.fuzzy_operations import intersection
 
 
 class FuzzySet:
+    ''' A class for modeling Fuzzy Sets
+
+        :param name: label assigned to the fuzzy set
+        :type name: str
+        :param mf: membership function to associate with the linguistic value
+        :type mf: MembershipFunction
+        :param fs_operator: firing strength operator. "min" or "prod"
+        :type fs_operator: str
+    '''
+
     def __init__(self, name, mf, fs_operator='min'):
+
         self.name = name
         self.mf = mf
         self.firing_strength = None
@@ -23,17 +33,27 @@ class FuzzySet:
 
     @property
     def universe(self):
+        '''Universe range, [min, max]'''
         return self.mf.universe
 
     @universe.setter
     def universe(self, value):
         self.mf.universe = value
 
-    def eval(self, x, firing_strength=None, fs_operator=None):
-        if fs_operator != None:
+    def eval(self, x, fs_operator=None):
+        '''Evaluate the fuzzy set given an input
+
+        :param x: inputs values
+        :type x: list, numpy array, dictionary or pandas data frame
+        :param fs_operator: firing strength operator. "min" or "prod"
+        :type fs_operator: str
+
+        :returns: The membership function evaluation
+        '''
+        if not (fs_operator is None):
             self.fs_operator = fs_operator
 
-        if isinstance(x, (NonSingleton, )):
+        if isinstance(x, (NonSingleton,)):
             fuzzy_ns_values = intersection(self.eval(x.values),
                                            x.eval(),
                                            type=self.fs_operator)
@@ -75,6 +95,14 @@ class FuzzySet:
         return self.eval(x)
 
     def cut(self, firing_strength, and_op=None):
+        '''Establishes a firing strength value
+
+        :param firing_strength: value in [0,1]
+        :type firing_strength: float
+        :param and_op: conjunction operation. "min" or "prod"
+        :type and_op: str
+        :return: self
+        '''
         self.firing_strength = firing_strength
         self.fs_operator = and_op
         return self
@@ -85,18 +113,30 @@ class FuzzySet:
                            self.firing_strength)
 
     def complement(self):
+        '''Performs the complement operation to the fuzzy set
+
+        :return: self
+        '''
         self.mf.complement()
         return self
 
     def show(self, points=config.default_points, axes=None):
+        '''
+        Plots the fuzzy set's membership function
+
+        :param points: number of samples to evaluate the membership function
+        :type points: int
+        :param axes: for outside plotting
+        :type axes: plt.axes
+        '''
         u = np.linspace(self.mf.universe[0],
                         self.mf.universe[1],
                         num=points,
                         endpoint=True,
                         retstep=False,
                         dtype=None)
-        #u = np.sort(np.concatenate([u, self.mf.params], axis=0))
-        #u = np.unique(u)
+        # u = np.sort(np.concatenate([u, self.mf.params], axis=0))
+        # u = np.unique(u)
         c = self.eval(u)
         if not axes:
             _, ax = plt.subplots()
