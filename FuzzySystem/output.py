@@ -14,9 +14,6 @@ prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
 
 
-# from ..Defuzzifier.defuzzifier  import Defuzzifier
-
-
 class Output:
     '''A class to represent the output of the FIS evaluation
 
@@ -151,7 +148,7 @@ class Output:
                 if isinstance(defuzzifier, (list, )):
                     for j, d in enumerate(defuzzifier):
                         crisp = d(consequents).eval()[key]
-                        if crisp > universe[0] and crisp < universe[1]:
+                        if universe[0] < crisp < universe[1]:
                             if label:
                                 ax.axvline(x=crisp,
                                            lw=2,
@@ -159,7 +156,7 @@ class Output:
                                                d.name, crisp),
                                            c=colors[j])
                                 print("{}={:.3f}".format(d.name, crisp))
-                                #ax.annotate("{}={:.3f}".format(d.name, crisp),xy=(crisp, 0.1+j*0.1),
+                                # ax.annotate("{}={:.3f}".format(d.name, crisp),xy=(crisp, 0.1+j*0.1),
                                 #        xytext=(universe[1]+3, 0.1+j*0.1),#xytext=(1, 0.1+j*0.1),
                                 #        arrowprops=dict(arrowstyle="->"), size=12, family='sans-serif')
                     ax.legend()
@@ -172,7 +169,7 @@ class Output:
                                        lw=2,
                                        label="{}={:.3f}".format(
                                            defuzzifier.name, crisp))
-                            #ax.annotate("{}={:.3f}".format(defuzzifier.name, crisp), xy=(crisp, .5), xytext=(1, 0.7),
+                            # ax.annotate("{}={:.3f}".format(defuzzifier.name, crisp), xy=(crisp, .5), xytext=(1, 0.7),
                             #        arrowprops=dict(arrowstyle="->",connectionstyle="arc3"), size=14)
                     ax.legend()
                 ax.grid()

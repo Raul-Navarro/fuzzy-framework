@@ -1,5 +1,6 @@
 """A python framework to build Fuzzy Inference Systems
-.. moduleauthor:: Raul Navarro-Almanza<rnavarro@uabc.edu.mx>
+
+Raul Navarro-Almanza<rnavarro@uabc.edu.mx>
 """
 
 from FuzzySystem.fuzzyrule import TSKConsequent, Aggregation, FuzzyRule, Antecedent, Consequent
@@ -187,7 +188,7 @@ class FuzzyInferenceSystem:
             d = dict(r)
             for i, k in enumerate(self.inputs.keys()):
                 if k in d.keys():
-                    #If the proposition have the complement of fuzzy set
+                    # If the proposition has a complement operator over fuzzy set
                     if "not " in d[k]:
                         name = d[k].replace("not ", "")
                         if negatives:
@@ -198,7 +199,7 @@ class FuzzyInferenceSystem:
                         temp = temp + [fuzzysets_id[i][d[k]]]
                 else:
                     temp = temp + [0]
-            #Add rule weight to matrix_rules
+            # Adding weight rule to matrix_rules
             temp = temp + [d["weight"]]
             for i, o in enumerate(self.outputs.keys()):
                 temp = temp + [outputs_classes_id[i][d[o]]]

@@ -35,11 +35,9 @@ class Conector:
             return self(self(param2.prop1, param2.prop2, param2.conector),
                         param1, conector)
         if isinstance(param1, Proposition):
-            # OLD: param1 = param1.fuzzyvar.get(param1.fuzzyset).eval(self.inputs[param1.fuzzyvar.name])
             param1 = param1.getfuzzyset().eval(
                 self.inputs[param1.fuzzyvar.name])
         if isinstance(param2, Proposition):
-            #OLD: param2 = param2.fuzzyvar.get(param2.fuzzyset).eval(self.inputs[param2.fuzzyvar.name])
             param2 = param2.getfuzzyset().eval(
                 self.inputs[param2.fuzzyvar.name])
         if conector == min:
@@ -141,7 +139,6 @@ class Aggregation:
         self.__fuzzyvariables = {}
         self._inorder(self)
         return self.__fuzzyvariables
-        #return [(obj.name, obj) for obj in list(itertools.chain.from_iterable(self._inorder(self))) if isinstance(obj, (fv.FuzzyVariable))]
 
     def _inorder(self, node):
         if isinstance(node, Aggregation):
@@ -222,7 +219,7 @@ class Antecedent:
         :return: [FuzzySet] A fuzzy set if exits
         '''
         for prop in self.propositions:
-            if (variable == prop[0].name):
+            if variable == prop[0].name:
                 return prop.getfuzzyset()
         return None
 
@@ -274,7 +271,6 @@ class Antecedent:
 
     def __str__(self):
         if isinstance(self.propositions, (list,)):
-            # return ' and '.join(["{} is {}".format(var.name, value) for var, value in self.propositions])
             str_conector = " "
             if self.conector is not None:
                 if self.conector == min:
@@ -420,7 +416,7 @@ def constant_function(x, params):
 tsk_function_dict = {'linear': linear_function, 'constant': constant_function}
 
 
-class TSKConsequent():
+class TSKConsequent:
     '''A class to design consequent models type Sugeno
 
         :param function: [str, callable] type of output function. "linear" or "constant"
@@ -459,7 +455,7 @@ class TSKConsequent():
     def set_params(self, params):
         '''Establishes new parameters to be feed to the function
 
-        :param params: [array] coefficients value
+            :param params: [array] coefficients value
         '''
         if isinstance(params, (list, np.ndarray)):
             self.params = params
@@ -481,15 +477,15 @@ class TSKConsequent():
     def eval(self, x):
         '''Evaluates the TSKConsequent functions
 
-        :param x: [array, float] inputs to evaluate the TSKConsequent
-        :return resulted values of the functions evaluations
+            :param x: [array, float] inputs to evaluate the TSKConsequent
+            :return: resulted values of the functions evaluations
         '''
         x = np.array(list(x), dtype=np.float)
         x = x.squeeze()
         output = []
         if x.ndim > 1:
             # multiple instances
-            # dim: Instaces X Inputs
+            # dim: Instances X Inputs
             x = x.T
             if self.__build_in_func:
                 if self.params is None:
@@ -545,7 +541,7 @@ class FuzzyRule:
         )):
             self.consequent = consequent
         else:
-            #Proposition class
+            # Proposition class
             self.consequent = [consequent]
         self.conector = conector
 
@@ -617,7 +613,7 @@ class FuzzyRule:
         elif isinstance(self.consequent, (TSKConsequent)):
             if isinstance(x, (dict, )):
                 values = x.values()
-                return (self.consequent.eval(x=values), firing_strength)
+                return self.consequent.eval(x=values), firing_strength
             else:
                 raise ValueError("Inputs must be a tuple a dictionary")
         return [prop.eval(firing_strength) for prop in self.consequent]

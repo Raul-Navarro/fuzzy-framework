@@ -206,7 +206,7 @@ def import_fis_matlab(file):
     '''Function to import a mathlab type fis file to create an FuzzySystem object
 
     :param file: [str] path to the file to import
-    :return [FuzzySystem] a FuzzySystem equivalent to the input fis configuration file
+    :return: [FuzzySystem] a FuzzySystem equivalent to the input fis configuration file
     '''
     conf = read_fis_file(file)
     conf = parse_fis_file(conf)

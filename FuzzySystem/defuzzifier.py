@@ -51,6 +51,7 @@ class Defuzzifier:
                 "Output must be a List of rules' output or an Output object")
         self.universe = universe
         self.samples = samples
+        self.G = None
 
     def eval(self):
         '''Performs the defuzzification process
@@ -127,7 +128,7 @@ class Aggregator:
         agre_set = np.zeros([len(self.fuzzySets), len(universe)])
         for i, o in enumerate(self.fuzzySets):
             agre_set[i:] = o.eval(universe)
-        return (np.max(agre_set, axis=0), universe)
+        return np.max(agre_set, axis=0), universe
 
 
 class Centroid(Defuzzifier):

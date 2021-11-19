@@ -142,7 +142,7 @@ class MembershipFunction:
                   fontsize='x-large',
                   fancybox=True,
                   framealpha=0.5)
-        #legend.get_frame().set_facecolor('#FFFFFF')
+        # legend.get_frame().set_facecolor('#FFFFFF')
         ax.grid()
         if self.__complement:
             plt.title("complement of {}".format(self.name))
