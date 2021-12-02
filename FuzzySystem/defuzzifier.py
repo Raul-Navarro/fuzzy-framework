@@ -35,7 +35,6 @@ class Defuzzifier:
                  multiple_instances=True):
         self.nout = nout
         self.multiple_instances = False
-        print(str(output.__class__))
         if isinstance(output, (Output,)) or 'Output' in str(output.__class__):
             self.multiple_instances = output.multiple_outputs and multiple_instances
             self.output = output.fuzzysets

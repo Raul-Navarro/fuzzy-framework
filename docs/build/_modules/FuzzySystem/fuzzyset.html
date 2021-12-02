@@ -1,0 +1,284 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FuzzySystem.fuzzyset &#8212; Fuzzy System  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Fuzzy System</a></h1>
+
+
+
+<p class="blurb">A python framework to build Fuzzy Inference Systems</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Raul-Navarro&repo=fuzzy-framework&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">FuzzySystem</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/Basic%20Tipping%20Problem.html">Basic Tipping Problem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/Shower%20Fuzzy%20Inference%20System.html">Shower Fuzzy Inference System</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+<h3 class="donation">Donate/support</h3>
+
+
+
+
+
+
+
+<p>
+Professionally-supported Fuzzy System is available with the
+<a href="https://tidelift.com/subscription/pkg/pypi-alabaster?utm_source=pypi-alabaster&utm_medium=referral&utm_campaign=docs">Tidelift Subscription</a>.
+</p>
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FuzzySystem.fuzzyset</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2020 Raul Navarro-Almanza,</span>
+<span class="c1">#   Universidad Autónoma de Baja California</span>
+<span class="c1">#</span>
+<span class="c1"># SPDX-License-Identifier: MIT</span>
+<span class="c1"># This software is released under the MIT License.</span>
+<span class="c1"># https://opensource.org/licenses/MIT</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">FuzzySystem</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">FuzzySystem.nonsingleton</span> <span class="kn">import</span> <span class="n">NonSingleton</span>
+<span class="kn">from</span> <span class="nn">FuzzySystem.fuzzy_operations</span> <span class="kn">import</span> <span class="n">intersection</span>
+
+
+<div class="viewcode-block" id="FuzzySet"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyset.FuzzySet">[docs]</a><span class="k">class</span> <span class="nc">FuzzySet</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39; A class for modeling Fuzzy Sets</span>
+
+<span class="sd">        :param name: label assigned to the fuzzy set</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param mf: membership function to associate with the linguistic value</span>
+<span class="sd">        :type mf: MembershipFunction</span>
+<span class="sd">        :param fs_operator: firing strength operator. &quot;min&quot; or &quot;prod&quot;</span>
+<span class="sd">        :type fs_operator: str</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">fs_operator</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mf</span> <span class="o">=</span> <span class="n">mf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs_operator</span> <span class="o">=</span> <span class="n">fs_operator</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">universe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Universe range, [min, max]&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">universe</span>
+
+    <span class="nd">@universe</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">universe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">universe</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="FuzzySet.eval"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyset.FuzzySet.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">fs_operator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Evaluate the fuzzy set given an input</span>
+
+<span class="sd">        :param x: inputs values</span>
+<span class="sd">        :type x: list, numpy array, dictionary or pandas data frame</span>
+<span class="sd">        :param fs_operator: firing strength operator. &quot;min&quot; or &quot;prod&quot;</span>
+<span class="sd">        :type fs_operator: str</span>
+
+<span class="sd">        :returns: The membership function evaluation</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">fs_operator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fs_operator</span> <span class="o">=</span> <span class="n">fs_operator</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">NonSingleton</span><span class="p">,)):</span>
+            <span class="n">fuzzy_ns_values</span> <span class="o">=</span> <span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+                                           <span class="n">x</span><span class="o">.</span><span class="n">eval</span><span class="p">(),</span>
+                                           <span class="nb">type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs_operator</span><span class="p">)</span>
+            <span class="n">argmax</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">fuzzy_ns_values</span><span class="o">.</span><span class="n">argmax</span><span class="p">()]</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">argmax</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span>
+                <span class="nb">list</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="p">)):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs_operator</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">[</span>
+                        <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">x</span>
+                    <span class="p">]</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs_operator</span> <span class="o">==</span> <span class="s1">&#39;prod&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">[</span>
+                        <span class="n">xi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span> <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                    <span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                        <span class="s2">&quot;Firing strength operator must be either &#39;min&#39; or &#39;prod&#39;, get </span><span class="si">{}</span><span class="s2">&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs_operator</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs_operator</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span><span class="p">)]</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs_operator</span> <span class="o">==</span> <span class="s1">&#39;prod&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                        <span class="s2">&quot;Firing strength operator must be either &#39;min&#39; or &#39;prod&#39;&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FuzzySet.cut"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyset.FuzzySet.cut">[docs]</a>    <span class="k">def</span> <span class="nf">cut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">firing_strength</span><span class="p">,</span> <span class="n">and_op</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Establishes a firing strength value</span>
+
+<span class="sd">        :param firing_strength: value in [0,1]</span>
+<span class="sd">        :type firing_strength: float</span>
+<span class="sd">        :param and_op: conjunction operation. &quot;min&quot; or &quot;prod&quot;</span>
+<span class="sd">        :type and_op: str</span>
+<span class="sd">        :return: self</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span> <span class="o">=</span> <span class="n">firing_strength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs_operator</span> <span class="o">=</span> <span class="n">and_op</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">name: </span><span class="si">{0}</span><span class="se">\n</span><span class="s2">membership function: </span><span class="si">{1}</span><span class="se">\n</span><span class="s2">params: </span><span class="si">{2}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">firing strength:</span><span class="si">{3}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">info</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FuzzySet.complement"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyset.FuzzySet.complement">[docs]</a>    <span class="k">def</span> <span class="nf">complement</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Performs the complement operation to the fuzzy set</span>
+
+<span class="sd">        :return: self</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">complement</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FuzzySet.show"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyset.FuzzySet.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">default_points</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Plots the fuzzy set&#39;s membership function</span>
+
+<span class="sd">        :param points: number of samples to evaluate the membership function</span>
+<span class="sd">        :type points: int</span>
+<span class="sd">        :param axes: for outside plotting</span>
+<span class="sd">        :type axes: plt.axes</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">universe</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mf</span><span class="o">.</span><span class="n">universe</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">num</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
+                        <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">retstep</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">axes</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Fuzzy Set&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_fs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">u</span><span class="p">),</span>
+                    <span class="s1">&#39;--&#39;</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;original&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span> <span class="o">=</span> <span class="n">_fs</span>
+            <span class="k">del</span> <span class="n">_fs</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">firing_strength</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span>
+                  <span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;x-large&#39;</span><span class="p">,</span>
+                  <span class="n">fancybox</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">framealpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">axes</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021, Raul Navarro-Almanza.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

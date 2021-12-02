@@ -47,7 +47,6 @@ class Output:
         '''
         if self.multiple_outputs:
             return self._outputs[:, nout, :]
-            # [output[nout] for output in self._outputs]
         return self._outputs
 
     @staticmethod
@@ -94,7 +93,6 @@ class Output:
         if self.type == 'Mamdani':
             if self.multiple_outputs:
                 temp = self._outputs[:, nout, :]
-                # temp = [output[nout] for output in self._outputs]
                 return Output.output_toDict(temp).keys()
             return Output.output_toDict(self._outputs).keys()
         elif self.type == 'Sugeno':
@@ -123,9 +121,8 @@ class Output:
         selected_output = self._outputs
         if self.multiple_outputs:
             selected_output = self._outputs[:, nout, :]
-            # [output[nout] for output in self._outputs]
         consequents = Output.output_toDict(selected_output)
-        for key in consequents.keys():  #self.get_outputs():
+        for key in consequents.keys():
             universe = consequents[key][0].universe
             if not axes:
                 _, ax = plt.subplots()
@@ -162,7 +159,7 @@ class Output:
                     ax.legend()
                 else:
                     crisp = defuzzifier(consequents).eval()[key]
-                    if crisp > universe[0] and crisp < universe[1]:
+                    if universe[0] < crisp < universe[1]:
                         ax.axvline(x=crisp, lw=2)
                         if label:
                             ax.axvline(x=crisp,
@@ -172,7 +169,7 @@ class Output:
                             # ax.annotate("{}={:.3f}".format(defuzzifier.name, crisp), xy=(crisp, .5), xytext=(1, 0.7),
                             #        arrowprops=dict(arrowstyle="->",connectionstyle="arc3"), size=14)
                     ax.legend()
-                ax.grid()
+            ax.grid()
         ax.set_xlabel('Universe')
         if not axes:
             plt.show()

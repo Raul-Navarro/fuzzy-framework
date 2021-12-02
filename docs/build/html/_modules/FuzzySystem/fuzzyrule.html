@@ -1,0 +1,761 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FuzzySystem.fuzzyrule &#8212; Fuzzy System  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Fuzzy System</a></h1>
+
+
+
+<p class="blurb">A python framework to build Fuzzy Inference Systems</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Raul-Navarro&repo=fuzzy-framework&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">FuzzySystem</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/Membership%20functions.html">Membership functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/Basic%20Tipping%20Problem.html">Basic Tipping Problem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/Shower%20Fuzzy%20Inference%20System.html">Shower Fuzzy Inference System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/Sugeno%20Fuzzy%20Inference%20System.html">Sugeno Fuzzy Inference System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/Tnorm%20operators.html">T-norm operators</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+<h3 class="donation">Donate/support</h3>
+
+
+
+
+
+
+
+<p>
+Professionally-supported Fuzzy System is available with the
+<a href="https://tidelift.com/subscription/pkg/pypi-alabaster?utm_source=pypi-alabaster&utm_medium=referral&utm_campaign=docs">Tidelift Subscription</a>.
+</p>
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for FuzzySystem.fuzzyrule</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2020 Raul Navarro-Almanza,</span>
+<span class="c1">#   Universidad Autónoma de Baja California</span>
+<span class="c1">#</span>
+<span class="c1"># SPDX-License-Identifier: MIT</span>
+<span class="c1"># This software is released under the MIT License.</span>
+<span class="c1"># https://opensource.org/licenses/MIT</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">FuzzySystem.fuzzy_operations</span> <span class="kn">import</span> <span class="n">minimum</span><span class="p">,</span> <span class="n">maximum</span>
+<span class="kn">from</span> <span class="nn">FuzzySystem.utils</span> <span class="kn">import</span> <span class="n">get_fuzzy_operators</span>
+
+
+<span class="k">class</span> <span class="nc">Conector</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Conector class to evaluate aggregators</span>
+
+<span class="sd">    :meta private:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">and_op</span><span class="o">=</span><span class="n">minimum</span><span class="p">,</span> <span class="n">or_op</span><span class="o">=</span><span class="n">maximum</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">operator</span> <span class="o">=</span> <span class="n">operator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">and_op</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">or_op</span> <span class="o">=</span> <span class="n">get_fuzzy_operators</span><span class="p">(</span><span class="n">and_op</span><span class="p">,</span> <span class="n">or_op</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">inputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span>
+
+    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">operator</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">,</span> <span class="n">conector</span><span class="o">=</span><span class="nb">min</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">Aggregation</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">(</span><span class="bp">self</span><span class="p">(</span><span class="n">param1</span><span class="o">.</span><span class="n">prop1</span><span class="p">,</span> <span class="n">param1</span><span class="o">.</span><span class="n">prop2</span><span class="p">,</span> <span class="n">param1</span><span class="o">.</span><span class="n">conector</span><span class="p">),</span>
+                        <span class="n">param2</span><span class="p">,</span> <span class="n">conector</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param2</span><span class="p">,</span> <span class="n">Aggregation</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">(</span><span class="bp">self</span><span class="p">(</span><span class="n">param2</span><span class="o">.</span><span class="n">prop1</span><span class="p">,</span> <span class="n">param2</span><span class="o">.</span><span class="n">prop2</span><span class="p">,</span> <span class="n">param2</span><span class="o">.</span><span class="n">conector</span><span class="p">),</span>
+                        <span class="n">param1</span><span class="p">,</span> <span class="n">conector</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">Proposition</span><span class="p">):</span>
+            <span class="n">param1</span> <span class="o">=</span> <span class="n">param1</span><span class="o">.</span><span class="n">getfuzzyset</span><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="n">param1</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param2</span><span class="p">,</span> <span class="n">Proposition</span><span class="p">):</span>
+            <span class="n">param2</span> <span class="o">=</span> <span class="n">param2</span><span class="o">.</span><span class="n">getfuzzyset</span><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">[</span><span class="n">param2</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">conector</span> <span class="o">==</span> <span class="nb">min</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">and_op</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">or_op</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Proposition</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Proposition class to create relationships between fuzzy variables and a fuzzy set</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fuzzyvar</span><span class="p">,</span> <span class="n">fuzzyset</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fuzzyvar</span> <span class="o">=</span> <span class="n">fuzzyvar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fuzzyset</span> <span class="o">=</span> <span class="n">fuzzyset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__complement</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuzzyvar</span>
+        <span class="k">elif</span> <span class="n">index</span> <span class="ow">is</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuzzyset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="nb">min</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__invert__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__complement</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__complement</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">conector</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">conector</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getfuzzyset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fuzzyset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__complement</span><span class="p">:</span>
+                <span class="n">resultcpy</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">resultcpy</span><span class="o">.</span><span class="n">complement</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__complement</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is not </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuzzyset</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuzzyset</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__complement</span><span class="p">:</span>
+            <span class="n">fuzzyset</span> <span class="o">=</span> <span class="s2">&quot;not &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuzzyset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fuzzyset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuzzyset</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fuzzyset</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Aggregation</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Aggregation class to build proposition trees</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop1</span><span class="p">,</span> <span class="n">prop2</span><span class="p">,</span> <span class="n">conector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prop1</span> <span class="o">=</span> <span class="n">prop1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prop2</span> <span class="o">=</span> <span class="n">prop2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="o">=</span> <span class="n">conector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fuzzyvariables</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">Aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="nb">min</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span>
+
+    <span class="k">def</span> <span class="fm">__iand__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">Aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="nb">min</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span>
+
+    <span class="k">def</span> <span class="fm">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">Aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span>
+
+    <span class="k">def</span> <span class="fm">__ior__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">Aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span>
+
+    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">and_op</span><span class="o">=</span><span class="n">minimum</span><span class="p">,</span> <span class="n">or_op</span><span class="o">=</span><span class="n">maximum</span><span class="p">):</span>
+        <span class="n">op</span> <span class="o">=</span> <span class="n">Conector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conector</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">and_op</span><span class="p">,</span> <span class="n">or_op</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">op</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prop1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conector</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fuzzy_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fuzzyvariables</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inorder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fuzzyvariables</span>
+
+    <span class="k">def</span> <span class="nf">_inorder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Aggregation</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inorder</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prop1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inorder</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prop2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Proposition</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fuzzyvariables</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__fuzzyvariables</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">fuzzyvar</span>
+
+    <span class="k">def</span> <span class="nf">get_tuples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_string_tuples</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rule</span> <span class="k">if</span> <span class="n">r</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">]]</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; is &quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rule</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">rule</span>
+
+    <span class="k">def</span> <span class="nf">_get_string_tuples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Aggregation</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="o">==</span> <span class="nb">min</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="o">==</span> <span class="nb">max</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_string</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prop1</span><span class="p">),</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_to_string</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prop2</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Aggregation</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="o">==</span> <span class="nb">min</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_string</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prop1</span><span class="p">),</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">_to_string</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prop2</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="o">==</span> <span class="nb">max</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> or </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_string</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prop1</span><span class="p">),</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">_to_string</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prop2</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Proposition</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Antecedent"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Antecedent">[docs]</a><span class="k">class</span> <span class="nc">Antecedent</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;A class to create conditional term of a IF-THEN fuzzy rule</span>
+
+<span class="sd">        :param proposition: [List of proposition] the operation FuzzyVariable[fuzzy_set_name] creates a proposition.</span>
+<span class="sd">        :param conector: [str] defines the type or logical relationship between propositions</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proposition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conector</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="o">=</span> <span class="n">conector</span>
+        <span class="k">if</span> <span class="n">proposition</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">proposition</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="nb">list</span><span class="p">,</span>
+                    <span class="n">Aggregation</span><span class="p">,</span>
+            <span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span> <span class="o">=</span> <span class="n">proposition</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span> <span class="o">=</span> <span class="p">[</span><span class="n">proposition</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fuzzy_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Gets the fuzzy variable in the propositions in form of dict&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">,</span> <span class="p">(</span><span class="n">Aggregation</span><span class="p">,)):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="o">.</span><span class="n">fuzzy_variables</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,)):</span>
+            <span class="k">return</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">p</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="p">)</span>
+                         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s1">&#39;Propositions must be either an array or Agregation object&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Antecedent.get"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Antecedent.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Gets the related fuzzy set given a name of a fuzzy variable</span>
+
+<span class="sd">        :param variable: [str] fuzzy variable name in the antecedent</span>
+<span class="sd">        :return: [FuzzySet] A fuzzy set if exits</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">variable</span> <span class="o">==</span> <span class="n">prop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">prop</span><span class="o">.</span><span class="n">getfuzzyset</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Antecedent.add"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Antecedent.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Adds some proposition to the actual antecedent</span>
+
+<span class="sd">        :param other: [Proposition] the proposition to add</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Propositions must be a list to use &quot;add&quot; method&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Antecedent.eval"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Antecedent.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">and_op</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">or_op</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Performs the evaluation of the antecedents</span>
+
+<span class="sd">        :param x: [dict, list, pandas Data Frame] input values</span>
+<span class="sd">        :param and_op: [str] type of disjunction operation. &quot;min&quot; or &quot;prod&quot;</span>
+<span class="sd">        :param or_op: [str] type of conjunction operation. &quot;max&quot; or &quot;sum&quot;</span>
+<span class="sd">        :return: [float] the antecedent firing strength</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">and_op</span><span class="p">,</span> <span class="n">or_op</span> <span class="o">=</span> <span class="n">get_fuzzy_operators</span><span class="p">(</span><span class="n">and_op</span><span class="p">,</span> <span class="n">or_op</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">,</span> <span class="p">(</span><span class="n">Aggregation</span><span class="p">,)):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">and_op</span><span class="p">,</span> <span class="n">or_op</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,)):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span>
+                <span class="nb">list</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="p">)):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">variable</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">x</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="o">==</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">and_op</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">or_op</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Antecedent.show"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Antecedent.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;prints the antecedent in natural language&#39;&#39;&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,)):</span>
+            <span class="n">str_conector</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="o">==</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span>
+                    <span class="n">str_conector</span> <span class="o">=</span> <span class="s2">&quot; and &quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">str_conector</span> <span class="o">=</span> <span class="s2">&quot; or &quot;</span>
+            <span class="k">return</span> <span class="n">str_conector</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">prop</span><span class="p">))</span> <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">,</span> <span class="p">(</span><span class="n">Aggregation</span><span class="p">,)):</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;EMPTY&#39;</span></div>
+
+
+<div class="viewcode-block" id="Consequent"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Consequent">[docs]</a><span class="k">class</span> <span class="nc">Consequent</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;A class to create consequent term of a IF-THEN fuzzy rule</span>
+
+<span class="sd">            :param proposition: [List of proposition] the operation FuzzyVariable[fuzzy_set_name] creates a proposition.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proposition</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">proposition</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">proposition</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span> <span class="o">=</span> <span class="n">proposition</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span> <span class="o">=</span> <span class="p">[</span><span class="n">proposition</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fuzzy_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Gets the fuzzy variable in the propositions in form of dict&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">p</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">])</span>
+
+<div class="viewcode-block" id="Consequent.get"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Consequent.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Gets the related fuzzy set given a name of a fuzzy variable</span>
+
+<span class="sd">                :param variable: [str] fuzzy variable name in the antecedent</span>
+<span class="sd">                :return: [FuzzySet] A fuzzy set if exits</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">variable</span> <span class="o">==</span> <span class="n">prop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">prop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prop</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Consequent.add"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Consequent.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Adds some proposition to the actual consequent</span>
+
+<span class="sd">            :param other: [Proposition] the proposition to add</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Consequent.eval"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Consequent.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">and_op</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Performs the evaluation of the consequent</span>
+
+<span class="sd">                :param x: [float] firing strength value</span>
+<span class="sd">                :param and_op: [str] type of disjunction operation for the implication. &quot;min&quot; or &quot;prod&quot;</span>
+<span class="sd">                :return: [FuzztSet] the resulted fuzzy set with a firing strength value</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">getfuzzyset</span><span class="p">()</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">and_op</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span>
+                <span class="nb">list</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="p">)):</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">:</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">prop</span><span class="o">.</span><span class="n">fuzzyvar</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                   <span class="n">prop</span><span class="o">.</span><span class="n">getfuzzyset</span><span class="p">()</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">and_op</span><span class="p">)))</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,)):</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">propositions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="p">)):</span>
+                    <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> is </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">prop</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="p">(</span><span class="n">Proposition</span><span class="p">,</span> <span class="p">)):</span>
+                    <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">prop</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39; and &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Consequent.show"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.Consequent.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;prints the antecedent in natural language&#39;&#39;&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="linear_function"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.linear_function">[docs]</a><span class="k">def</span> <span class="nf">linear_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Performs the dot product between inputs and a set of coefficients</span>
+
+<span class="sd">    :param x: [array] inputs</span>
+<span class="sd">    :param params: [array] coefficients</span>
+<span class="sd">    :return: [float] resulted dot product operation</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span>
+            <span class="nb">list</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># multiple instances</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">x_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">x_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x_</span><span class="p">,</span> <span class="n">x</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x_</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x_</span> <span class="o">*</span> <span class="n">params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="constant_function"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.constant_function">[docs]</a><span class="k">def</span> <span class="nf">constant_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Performs a constant evaluation. Gives params value as output</span>
+
+<span class="sd">    :param x: [float, array] inputs values</span>
+<span class="sd">    :param params: [float] constant value</span>
+<span class="sd">    :return: constant value given by params</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">params</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;params value must be a number&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span>
+            <span class="nb">list</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="p">)):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># multiple instances</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="o">*</span> <span class="n">params</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">params</span></div>
+
+
+<span class="n">tsk_function_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;linear&#39;</span><span class="p">:</span> <span class="n">linear_function</span><span class="p">,</span> <span class="s1">&#39;constant&#39;</span><span class="p">:</span> <span class="n">constant_function</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="TSKConsequent"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.TSKConsequent">[docs]</a><span class="k">class</span> <span class="nc">TSKConsequent</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;A class to design consequent models type Sugeno</span>
+
+<span class="sd">        :param function: [str, callable] type of output function. &quot;linear&quot; or &quot;constant&quot;</span>
+<span class="sd">        :param params: [array] coefficients array</span>
+<span class="sd">        :param label: [str]  given name to the consequent</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__build_in_func</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__other</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">tsk_function_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;build in functions must be one of them: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tsk_function_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__build_in_func</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="c1"># if isinstance(params, (int, np.int)):</span>
+                <span class="c1">#     self.params = np.ones([params], dtype=np.float64)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;parameters must be an array&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;function&#39; must be callable&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="vm">__name__</span>
+
+<div class="viewcode-block" id="TSKConsequent.set_params"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.TSKConsequent.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Establishes new parameters to be feed to the function</span>
+
+<span class="sd">            :param params: [array] coefficients value</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span></div>
+
+<div class="viewcode-block" id="TSKConsequent.get_params"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.TSKConsequent.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;:return coefficients of the function&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span></div>
+
+<div class="viewcode-block" id="TSKConsequent.add"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.TSKConsequent.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Adds some output consequent</span>
+
+<span class="sd">            :param other: [TSKConsequent] the new output to add</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="n">TSKConsequent</span><span class="p">,)):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__other</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__other</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__other</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TSKConsequent.eval"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.TSKConsequent.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Evaluates the TSKConsequent functions</span>
+
+<span class="sd">            :param x: [array, float] inputs to evaluate the TSKConsequent</span>
+<span class="sd">            :return: resulted values of the functions evaluations</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># multiple instances</span>
+            <span class="c1"># dim: Instances X Inputs</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_in_func</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">x_i</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span> <span class="k">for</span> <span class="n">x_i</span> <span class="ow">in</span> <span class="n">x</span><span class="p">])</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_in_func</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__other</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="p">)):</span>
+            <span class="k">for</span> <span class="n">tsk_cons</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__other</span><span class="p">:</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tsk_cons</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="vm">__name__</span></div>
+
+
+<div class="viewcode-block" id="FuzzyRule"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.FuzzyRule">[docs]</a><span class="k">class</span> <span class="nc">FuzzyRule</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;A class for modeling fuzzy rules</span>
+
+<span class="sd">    :param antecedent: [Antecedent] an antecedent object that conforms the rule</span>
+<span class="sd">    :param consequent: [list of Consequent] a list of consequent objects that conforms the rule</span>
+<span class="sd">    :param and_op: [str] type of disjunction operation. &quot;min&quot; or &quot;prod&quot;</span>
+<span class="sd">    :param or_op: [str] type of conjunction operation. &quot;max&quot; or &quot;sum&quot;</span>
+<span class="sd">    :param weight: [float] weight value for the rule</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">antecedent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">consequent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">conector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">and_op</span><span class="o">=</span><span class="s1">&#39;min&#39;</span><span class="p">,</span>
+                 <span class="n">or_op</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span>
+                 <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">antecedent</span> <span class="o">=</span> <span class="n">antecedent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">and_op</span> <span class="o">=</span> <span class="n">and_op</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">or_op</span> <span class="o">=</span> <span class="n">or_op</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">consequent</span><span class="p">,</span> <span class="p">(</span>
+                <span class="nb">list</span><span class="p">,</span>
+                <span class="n">Consequent</span><span class="p">,</span>
+                <span class="n">TSKConsequent</span><span class="p">,</span>
+        <span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">consequent</span> <span class="o">=</span> <span class="n">consequent</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Proposition class</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">consequent</span> <span class="o">=</span> <span class="p">[</span><span class="n">consequent</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conector</span> <span class="o">=</span> <span class="n">conector</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Gets the list of all fuzzy variables in the antecedent</span>
+
+<span class="sd">        :return: dictionary of the fuzzy variables</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">antecedent</span><span class="o">.</span><span class="n">fuzzy_variables</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Gets the list of all fuzzy variables in the consequent</span>
+
+<span class="sd">                :return: dictionary of the fuzzy variables or functions</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">,</span> <span class="p">(</span><span class="n">Consequent</span><span class="p">,)):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="o">.</span><span class="n">fuzzy_variables</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">,</span> <span class="p">(</span><span class="n">TSKConsequent</span><span class="p">,)):</span>
+            <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">}</span>
+
+<div class="viewcode-block" id="FuzzyRule.eval"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.FuzzyRule.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">and_op</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">or_op</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Performs the implication process  in the fuzzy rule</span>
+
+<span class="sd">        :param x: [float, array, dict, pandas Data Frame] input values</span>
+<span class="sd">        :param and_op: [str] type of disjunction operation. &quot;min&quot; or &quot;prod&quot;</span>
+<span class="sd">        :param or_op: [str] type of conjunction operation. &quot;max&quot; or &quot;sum&quot;</span>
+<span class="sd">        :param verbose: print process information</span>
+<span class="sd">        :return: [list of Output] outputs of the implication process</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">and_op</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">and_op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">and_op</span>
+        <span class="k">if</span> <span class="n">or_op</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">or_op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">or_op</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,)):</span>
+            <span class="n">firing_strength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">antecedent</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">and_op</span><span class="p">,</span> <span class="n">or_op</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,)):</span>
+            <span class="n">firing_strength</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">antecedent</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">and_op</span><span class="p">,</span> <span class="n">or_op</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Input must be a dictionary or an array&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">firing_strength</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+                <span class="n">firing_strength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">firing_strength</span><span class="p">)</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; </span><span class="si">{}</span><span class="s1">, fs = </span><span class="si">{}</span><span class="s1"> with weight = </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">firing_strength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; </span><span class="si">{}</span><span class="s1">, fs = </span><span class="si">{:.2f}</span><span class="s1"> with weight = </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">firing_strength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">firing_strength</span><span class="p">,</span> <span class="p">(</span>
+                <span class="nb">list</span><span class="p">,</span>
+                <span class="nb">tuple</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="p">)):</span>
+            <span class="n">firing_strength</span> <span class="o">=</span> <span class="p">[</span><span class="n">fs</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="k">for</span> <span class="n">fs</span> <span class="ow">in</span> <span class="n">firing_strength</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">firing_strength</span> <span class="o">=</span> <span class="n">firing_strength</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">,</span> <span class="p">(</span><span class="n">Consequent</span><span class="p">,</span> <span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">firing_strength</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,)):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">firing_strength</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">firing_strength</span> <span class="o">=</span> <span class="n">firing_strength</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">firing_strength</span><span class="p">,</span> <span class="n">and_op</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">,</span> <span class="p">(</span><span class="n">TSKConsequent</span><span class="p">,)):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="p">)):</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">values</span><span class="p">),</span> <span class="n">firing_strength</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Inputs must be a tuple a dictionary&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">firing_strength</span><span class="p">)</span> <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">,</span> <span class="p">(</span><span class="n">Consequent</span><span class="p">,</span> <span class="p">)):</span>
+            <span class="k">return</span> <span class="s2">&quot;IF </span><span class="si">{}</span><span class="s2"> THEN </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">antecedent</span><span class="p">),</span> <span class="s1">&#39; and &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">cons</span><span class="p">)</span> <span class="k">for</span> <span class="n">cons</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="o">.</span><span class="n">propositions</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="p">)):</span>
+            <span class="k">return</span> <span class="s2">&quot;IF </span><span class="si">{}</span><span class="s2"> THEN </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">antecedent</span><span class="p">),</span>
+                <span class="s1">&#39; and &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">cons</span><span class="p">)</span> <span class="k">for</span> <span class="n">cons</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">,</span> <span class="p">(</span><span class="n">TSKConsequent</span><span class="p">,</span> <span class="p">)):</span>
+            <span class="k">return</span> <span class="s2">&quot;IF </span><span class="si">{}</span><span class="s2"> THEN </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">antecedent</span><span class="p">),</span>
+                                          <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">consequent</span><span class="p">))</span>
+
+<div class="viewcode-block" id="FuzzyRule.show"><a class="viewcode-back" href="../../code.html#FuzzySystem.fuzzyrule.FuzzyRule.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Prints the rule in natural language&#39;&#39;&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2021, Raul Navarro-Almanza.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

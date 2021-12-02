@@ -11,9 +11,6 @@ import numpy as np
 from FuzzySystem import config
 
 
-# logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-
-
 def divide(x, y):
     '''Perform deviation with clip value [, MAX float]
 
@@ -130,8 +127,6 @@ class MembershipFunction:
                         endpoint=True,
                         retstep=False,
                         dtype=None)
-        # u = np.sort(np.concatenate([u, self.params], axis=0))
-        # u = np.unique(u)
         c = [self.eval(e) for e in u]
         if not axes:
             fig, ax = plt.subplots()
@@ -142,7 +137,6 @@ class MembershipFunction:
                   fontsize='x-large',
                   fancybox=True,
                   framealpha=0.5)
-        # legend.get_frame().set_facecolor('#FFFFFF')
         ax.grid()
         if self.__complement:
             plt.title("complement of {}".format(self.name))
@@ -238,7 +232,6 @@ class Logmf(MembershipFunction):
         super().__init__(params, universe, name, complement)
 
     def compute(self, x):
-        # return 1./(1+np.exp(-x))
         return 2. / (1 + np.exp(((x - self.c) / self.a) ** 2))
 
     @property

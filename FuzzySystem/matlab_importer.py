@@ -67,8 +67,8 @@ def import_rules_matlab(rules, fis_inputs, fis_outputs):
     consequent = []
     fis_rules = None
     for i, rule in enumerate(rules):
-        antecedent.append(Antecedent(conector=min))
-        consequent.append(Consequent(conector=min))
+        antecedent.append(Antecedent(conector='min'))
+        consequent.append(Consequent())
 
         for j, a in enumerate(rule[0]):
             antecedent[i].add(fis_inputs[j][int(a) - 1])
@@ -152,8 +152,6 @@ def read_fis_file(file):
 def parse_fis_file(conf):
     ''':meta private:'''
     for inp in range(0, int(conf['system']['NumInputs'])):
-        # var_name = conf['inputs'][inp]['Name']
-        # interval = conf['inputs'][inp]['Range']
         num_mf = int(conf['inputs'][inp]['NumMFs'])
         fuzzy_sets = []
         for i in range(1, num_mf + 1):
@@ -166,8 +164,6 @@ def parse_fis_file(conf):
         conf['inputs'][inp]['values'] = fuzzy_sets
 
     for inp in range(0, int(conf['system']['NumOutputs'])):
-        #var_name = conf['outputs'][inp]['Name']
-        #interval = conf['outputs'][inp]['Range']
         num_mf = int(conf['outputs'][inp]['NumMFs'])
         fuzzy_sets = []
         for i in range(1, num_mf + 1):
@@ -203,7 +199,7 @@ def get_io_fis(conf):
 
 
 def import_fis_matlab(file):
-    '''Function to import a mathlab type fis file to create an FuzzySystem object
+    '''Function to import a matlab type fis file to create an FuzzySystem object
 
     :param file: [str] path to the file to import
     :return: [FuzzySystem] a FuzzySystem equivalent to the input fis configuration file

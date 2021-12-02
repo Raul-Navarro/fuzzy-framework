@@ -77,7 +77,7 @@ class FuzzyInferenceSystem:
         for r in self.rules:
             print(str(r))
 
-    def eval(self, inputs, verbose=False):
+    def eval(self, inputs, verbose=None):
         '''Evaluates the fuzzy inference system
 
         :param inputs: Inputs to evaluate.
@@ -85,7 +85,8 @@ class FuzzyInferenceSystem:
         :param verbose: flog to print information
         :return: Output object that contains the fuzzy set of the evaluated consequent
         '''
-        verbose = self.verbose or verbose
+        if verbose is None:
+            verbose = self.verbose
 
         from .utils import format_inputs
         inputs = format_inputs(inputs, inputs=self.inputs, verbose=verbose)
@@ -134,8 +135,6 @@ class FuzzyInferenceSystem:
     def matrix_rules(self):
         '''Matrix with the relationships between antecedents and consequent'''
         mat = []
-        # input = self.inputs
-        # output = self.outputs
         for rule in self.rules:
             r_mat = []
             if isinstance(rule.antecedent, (
@@ -163,10 +162,6 @@ class FuzzyInferenceSystem:
         :param negatives: If is True, the negated antecedents are multiplied by -1
         :return: Matrix with the rule associations.
         '''
-        # inputs_id = dict(
-        #     zip(self.inputs.keys(), range(0, len(self.inputs.keys()))))
-        # outputs_id = dict(
-        #     zip(self.outputs.keys(), range(0, len(self.outputs.keys()))))
 
         outputs_classes_id = {}
         for i, k in enumerate(self.outputs.keys()):
@@ -212,6 +207,7 @@ class FuzzyInferenceSystem:
         :return: Dictionary with all the elements in the FIS
         '''
         structure = {}
+        # TODO: Add all compatible membership functions to the dictionary
         name_dict = {'Gaussian mf': 'gaussmf'}
         for k in self.inputs.keys():
             structure[k] = []

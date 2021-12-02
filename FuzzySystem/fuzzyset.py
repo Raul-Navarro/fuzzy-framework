@@ -135,8 +135,6 @@ class FuzzySet:
                         endpoint=True,
                         retstep=False,
                         dtype=None)
-        # u = np.sort(np.concatenate([u, self.mf.params], axis=0))
-        # u = np.unique(u)
         c = self.eval(u)
         if not axes:
             _, ax = plt.subplots()

@@ -73,11 +73,7 @@ class FuzzyVariable:
                         endpoint=True,
                         retstep=False,
                         dtype=None)
-        # supports = np.array([fs.mf.params for fs in self.fuzzysets]).flatten()
-        # supports = list(set(supports) - set(np.intersect1d(supports, u)))
-        # u = u[:-len(supports)]
         u = u.flatten()
-        # u = np.sort(np.concatenate([u, supports], axis=0))
         return u
 
     def show(self,

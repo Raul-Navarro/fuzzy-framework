@@ -93,7 +93,7 @@ def format_inputs(x, inputs=None, data_columns=None, verbose=False):
     raise Exception('Input must be a dictionary or an array')
 
 
-def get_fuzzy_operators(and_op, or_op):
+def get_fuzzy_operators(and_op='min', or_op='max'):
     '''Return the functions to perform the disjunction and conjunction operation
 
     :param and_op: type of operator. "min" or "prod"

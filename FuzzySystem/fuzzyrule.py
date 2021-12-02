@@ -82,10 +82,10 @@ class Proposition:
         result = self.fuzzyvar.get(self.fuzzyset)
         if result is not None:
             if self.__complement:
-                resultcpy = copy.copy(result)
+                resultcpy = copy.deepcopy(result)
                 return resultcpy.complement()
             else:
-                return copy.copy(result)
+                return copy.deepcopy(result)
 
     def __str__(self):
         if self.__complement:
@@ -257,7 +257,7 @@ class Antecedent:
                 if self.get(variable)
             ]
             if self.conector is not None:
-                if self.conector == min:
+                if self.conector == "min":
                     return and_op(result)
                 else:
                     return or_op(result)
@@ -273,7 +273,7 @@ class Antecedent:
         if isinstance(self.propositions, (list,)):
             str_conector = " "
             if self.conector is not None:
-                if self.conector == min:
+                if self.conector == "min":
                     str_conector = " and "
                 else:
                     str_conector = " or "
@@ -311,7 +311,7 @@ class Consequent:
                 :return: [FuzzySet] A fuzzy set if exits
         '''
         for prop in self.propositions:
-            if (variable == prop[0].name):
+            if variable == prop[0].name:
                 return prop[0].get(prop[1])
         return None
 
@@ -351,7 +351,7 @@ class Consequent:
             return results
 
     def __str__(self):
-        if isinstance(self.propositions, (list)):
+        if isinstance(self.propositions, (list,)):
             output = []
             for prop in self.propositions:
                 if isinstance(prop, (tuple, )):
@@ -447,7 +447,7 @@ class TSKConsequent:
         if not callable(self.function):
             raise ValueError("'function' must be callable")
 
-        if label != None:
+        if label is not None:
             self.name = label
         else:
             self.name = self.function.__name__
@@ -525,8 +525,8 @@ class FuzzyRule:
                  antecedent=None,
                  consequent=None,
                  conector=None,
-                 and_op=minimum,
-                 or_op=maximum,
+                 and_op='min',
+                 or_op='max',
                  weight=1):
 
         self.antecedent = antecedent
@@ -564,7 +564,7 @@ class FuzzyRule:
         elif isinstance(self.consequent, (TSKConsequent,)):
             return {self.consequent.name: self.consequent}
 
-    def eval(self, x, and_op=minimum, or_op=maximum, verbose=False):
+    def eval(self, x, and_op=None, or_op=None, verbose=False):
         '''Performs the implication process  in the fuzzy rule
 
         :param x: [float, array, dict, pandas Data Frame] input values
@@ -573,14 +573,14 @@ class FuzzyRule:
         :param verbose: print process information
         :return: [list of Output] outputs of the implication process
         '''
-
-        and_op, or_op = get_fuzzy_operators(and_op, or_op)
-        self.and_op = and_op
-        self.or_op = or_op
-        if isinstance(x, (dict)):
-            firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
+        if and_op is None:
+            and_op = self.and_op
+        if or_op is None:
+            or_op = self.or_op
+        if isinstance(x, (dict,)):
+            firing_strength = self.antecedent.eval(x, and_op, or_op)
         elif isinstance(x, (np.ndarray,)):
-            firing_strength = self.antecedent.eval(x, self.and_op, self.or_op)
+            firing_strength = self.antecedent.eval(x, and_op, or_op)
         else:
             raise Exception('Input must be a dictionary or an array')
 
@@ -604,13 +604,13 @@ class FuzzyRule:
             firing_strength = firing_strength * self.weight
 
         if isinstance(self.consequent, (Consequent, )):
-            if isinstance(firing_strength, (list)):
+            if isinstance(firing_strength, (list,)):
                 if len(firing_strength) == 1:
                     firing_strength = firing_strength[0]
 
-            return self.consequent.eval(firing_strength, self.and_op)
+            return self.consequent.eval(firing_strength, and_op)
 
-        elif isinstance(self.consequent, (TSKConsequent)):
+        elif isinstance(self.consequent, (TSKConsequent,)):
             if isinstance(x, (dict, )):
                 values = x.values()
                 return self.consequent.eval(x=values), firing_strength
