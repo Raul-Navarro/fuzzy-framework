@@ -64,7 +64,6 @@ html_theme_options = {
     "github_user": "Raul-Navarro",
     "github_repo": "fuzzy-framework",
     "fixed_sidebar": True,
-    "tidelift_url": "https://tidelift.com/subscription/pkg/pypi-alabaster?utm_source=pypi-alabaster&utm_medium=referral&utm_campaign=docs",  # noqa
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
